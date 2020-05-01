@@ -28,9 +28,9 @@
 #include <multicolors>
 #include <PTaH>
 
-#undef REQUIRE_PLUGIN
+#undef REQUIRE_EXTENSIONS
 #include <sourcescramble>
-#define REQUIRE_PLUGIN
+#define REQUIRE_EXTENSIONS
 
 #pragma semicolon 1
 #pragma newdecls required
