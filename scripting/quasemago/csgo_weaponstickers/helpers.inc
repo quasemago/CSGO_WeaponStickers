@@ -131,6 +131,13 @@ stock void SetWeaponClipAmmo(int weapon, int value)
 	}
 }
 
+stock int GetRandomSticker()
+{
+	int stickerSet = Math_GetRandomInt(0, g_stickerSetsCount - 1);
+	int stickerIndex = Math_GetRandomInt(0, g_stickerCount[stickerSet] - 1);
+	return g_Sticker[stickerSet][stickerIndex].m_defIndex;
+}
+
 stock int GetStickerIndexByDefIndex(int defIndex, int &stickerSet)
 {
 	for (int i = 0; i < g_stickerSetsCount; i++)
@@ -356,4 +363,18 @@ stock int unsigned_compare(int a, int b)
 	if ((a >>> 31) == (b >>> 31))
 		return ((a & 0x7FFFFFFF) > (b & 0x7FFFFFFF)) ? 1 : -1;
 	return ((a >>> 31) > (b >>> 31)) ? 1 : -1;
+}
+
+// Snipped from smlib
+#define SIZE_OF_INT		2147483647		// without 0
+stock int Math_GetRandomInt(int min, int max)
+{
+	int random = GetURandomInt();
+
+	if (random == 0)
+	{
+		random++;
+	}
+
+	return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }

@@ -39,6 +39,7 @@
  * Sub.
  */
 bool g_isLateLoad = false;
+bool g_hasExternalWs = false;
 
 #include "quasemago/csgo_weaponstickers/globals.inc"
 #include "quasemago/csgo_weaponstickers/helpers.inc"
@@ -72,13 +73,13 @@ public void OnPluginStart()
 	LoadTranslations("csgo_weaponstickers.phrases");
 
 	// ConVars.
-	CreateConVar("sm_weaponstickers_version", PLUGIN_VERSION, "Versão do Plugin", FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
-	g_cvarEnabled = CreateConVar("sm_weaponstickers_enabled", "1", "Ativa ou desativa o plugin Weapon Stickers.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_cvarUpdateViewModel = CreateConVar("sm_weaponstickers_updateviewmodel", "1", "Especifica se o view model vai ser atualizado ao alterar os stickers (P.S: o jogador irá sentir um pequeno rollback).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_cvarReuseTime = CreateConVar("sm_weaponstickers_reusetime", "5", "Especifica quantos segundos vai ser necessario esperar para atualizar novamente o inventário.", FCVAR_NOTIFY, true, 0.1);
+	CreateConVar("sm_weaponstickers_version", PLUGIN_VERSION, "Plugin Version", FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
+	g_cvarEnabled = CreateConVar("sm_weaponstickers_enabled", "1", "Enable or disable Plugin.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_cvarUpdateViewModel = CreateConVar("sm_weaponstickers_updateviewmodel", "0", "Specifies whether the view model will be updated when changing stickers (P.S: the player will experience a small rollback).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_cvarReuseTime = CreateConVar("sm_weaponstickers_reusetime", "5", "Specifies how many seconds it will be necessary to wait to update the stickers again.", FCVAR_NOTIFY, true, 0.1);
 
 	AutoExecConfig(true, "csgo_weaponstickers");
-	CSetPrefix("{red}[Weapon Stickers]{default}");
+	CSetPrefix("{green}[Weapon Stickers]{default}");
 
 	// Forward event to modules.
 	LoadSDK();
@@ -119,6 +120,15 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errMax)
 	/* Library */
 	RegPluginLibrary("csgo_weaponstickers");
 	return APLRes_Success;
+}
+
+public void OnAllPluginsLoaded()
+{
+	// Check for external ws plugins.
+	if ((FindConVar("sm_weapons_float_increment_size") != null) || (FindConVar("sm_weaponpaints_c4") != null))
+	{
+		g_hasExternalWs = true;
+	}
 }
 
 /**
@@ -192,13 +202,16 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 		{
 			if (ClientWeaponHasStickers(client, index) && IsValidWeaponToChange(-1, g_Weapons[index].m_defIndex, _, true))
 			{
-				// Init custom weapon.
-				static int IDHigh = 16384;
-				SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
-				SetEntProp(entity, Prop_Send, "m_iItemIDHigh", IDHigh++);
-				SetEntProp(entity, Prop_Send, "m_iAccountID", GetSteamAccountID(client, true));
-				SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
-				SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
+				// Check to avoid conflicts with external ws.
+				if (g_hasExternalWs)
+				{
+					static int IDHigh = 16384;
+					SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
+					SetEntProp(entity, Prop_Send, "m_iItemIDHigh", IDHigh++);
+					SetEntProp(entity, Prop_Send, "m_iAccountID", GetSteamAccountID(client, true));
+					SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
+					SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
+				}
 
 				// Change stickers.
 				Address pWeapon = GetEntityAddress(entity);

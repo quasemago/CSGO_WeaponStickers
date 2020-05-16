@@ -1,6 +1,7 @@
 void LoadAPI()
 {
 	CreateNative("CS_SetWeaponSticker", Native_SetWeaponSticker);
+	CreateNative("CS_GetRandomSticker", Native_GetRandomSticker);
 }
 
 public int Native_SetWeaponSticker(Handle plugins, int numParams)
@@ -32,13 +33,21 @@ public int Native_SetWeaponSticker(Handle plugins, int numParams)
 		return false;
 	}
 
+	int defIndex = GetNativeCell(4);
+	if (defIndex == -1) // random
+	{
+		defIndex = GetRandomSticker();
+	}
+
 	Address pEconItemView = pWeapon + view_as<Address>(g_EconItemOffset);
-	SetAttributeValue(client, pEconItemView, GetNativeCell(4), "sticker slot %i id", slot);
+	SetAttributeValue(client, pEconItemView, defIndex, "sticker slot %i id", slot);
 	SetAttributeValue(client, pEconItemView, view_as<int>(GetNativeCell(5)), "sticker slot %i wear", slot);
 
-	if (g_cvarUpdateViewModel.BoolValue)
-	{
-		PTaH_ForceFullUpdate(client);
-	}
+	PTaH_ForceFullUpdate(client);
 	return true;
+}
+
+public int Native_GetRandomSticker(Handle plugins, int numParams)
+{
+	return GetRandomSticker();
 }
