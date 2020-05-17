@@ -27,10 +27,10 @@
 #include <sdktools>
 #include <multicolors>
 #include <PTaH>
+#include <eItems>
 
 #undef REQUIRE_EXTENSIONS
 #include <sourcescramble>
-#define REQUIRE_EXTENSIONS
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -83,7 +83,6 @@ public void OnPluginStart()
 
 	// Forward event to modules.
 	LoadSDK();
-	LoadConfigs();
 	LoadCommands();
 	LoadDatabase();
 
@@ -134,6 +133,37 @@ public void OnAllPluginsLoaded()
 /**
  * Forwards.
  */
+public void eItems_OnItemsSynced()
+{
+	g_stickerCount = eItems_GetStickersCount();
+	g_stickerSetsCount = eItems_GetStickersSetsCount();
+
+	g_Stickers = new StringMap();
+
+	for (int i = 0; i < g_stickerSetsCount; i++)
+	{
+		if (g_StickerSet[i] != null)
+		{
+			delete g_StickerSet[i];
+		}
+
+		g_StickerSet[i] = new ArrayList(1);
+		int id = eItems_GetStickerSetIdByStickerSetNum(i);
+
+		for (int j = 0; j < g_stickerCount; j++)
+		{
+			if (eItems_IsStickerInSet(j, id))
+			{
+				g_StickerSet[i].Push(j);
+				
+				static char num[16];
+				IntToString(j, num, sizeof(num));
+				g_Stickers.SetValue(num, i);
+			}
+		}
+	}
+}
+
 public void OnClientPostAdminCheck(int client)
 {
 	if (IsFakeClient(client) || !g_cvarEnabled.BoolValue)
@@ -153,7 +183,7 @@ public void OnClientDisconnect(int client)
 	{
 		for (int j = 0; j < MAX_STICKERS_SLOT; j++)
 		{
-			g_PlayerWeapon[client][i].m_stickerIndex[j] = 0;
+			g_PlayerWeapon[client][i].m_stickerDefIndex[j] = 0;
 		}
 	}
 
@@ -178,7 +208,7 @@ public Action OnGiveNamedItemPre(int client, char classname[64], CEconItemView &
 			return Plugin_Continue;
 		}
 
-		int index = GetWeaponIndexByClassname(classname);
+		int index = eItems_GetWeaponNumByClassName(classname);
 		if (index != -1 && ClientWeaponHasStickers(client, index))
 		{
 			ignoredCEconItemView = true;
@@ -197,13 +227,14 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 
 	if (IsClientInGame(client) && !IsFakeClient(client) && IsValidEntity(entity))
 	{
-		int index = GetWeaponIndexByClassname(classname);
+		int index = eItems_GetWeaponNumByClassName(classname);
 		if (index != -1)
 		{
-			if (ClientWeaponHasStickers(client, index) && IsValidWeaponToChange(-1, g_Weapons[index].m_defIndex, _, true))
+			int defIndex = eItems_GetWeaponDefIndexByClassName(classname);
+			if (ClientWeaponHasStickers(client, index) && IsValidWeaponToChange(-1, defIndex, _, true))
 			{
 				// Check to avoid conflicts with external ws.
-				if (g_hasExternalWs)
+				if (!g_hasExternalWs)
 				{
 					static int IDHigh = 16384;
 					SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
@@ -226,13 +257,13 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 				bool updated = false;
 				for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 				{
-					if (g_PlayerWeapon[client][index].m_stickerIndex[i] != 0)
+					if (g_PlayerWeapon[client][index].m_stickerDefIndex[i] != 0)
 					{
 						// Sticker updated.
 						updated = true;
 
 						// TODO: add Scale and Rotation.
-						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_stickerIndex[i], "sticker slot %i id", i);
+						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_stickerDefIndex[i], "sticker slot %i id", i);
 						SetAttributeValue(client, pEconItemView, view_as<int>(0.0), "sticker slot %i wear", i);
 					}
 				}
@@ -380,111 +411,11 @@ void LoadSDK()
 	g_EconItemOffset = FindSendPropOffset("CBaseCombatWeapon", "m_Item");
 }
 
-void LoadConfigs()
-{
-	static char config[PLATFORM_MAX_PATH];
-
-	// Parse Weapons.
-	BuildPath(Path_SM, config, sizeof(config), CONFIG_PATH_WEAPONS);
-	KeyValues kvWeapons = new KeyValues("Weapons");
-
-	if (!kvWeapons.ImportFromFile(config))
-	{
-		ThrowError("Can't find or read the file %s...", config);
-		delete kvWeapons;
-		return;
-	}
-
-	g_WeaponDefIndex = new StringMap();
-	g_WeaponClassName = new StringMap();
-
-	kvWeapons.Rewind();
-	int weapons = 0; // weapons counter.
-
-	if (kvWeapons.GotoFirstSubKey())
-	{
-		do
-		{
-			static char nameKey[MAX_LENGTH_DISPLAY];
-			static char indexKey[MAX_LENGTH_INDEX];
-			static char classKey[MAX_LENGTH_CLASSNAME];
-
-			kvWeapons.GetSectionName(classKey, sizeof(classKey));
-			kvWeapons.GetString("index", indexKey, sizeof(indexKey));
-			kvWeapons.GetString("name", nameKey, sizeof(nameKey));
-
-			g_Weapons[weapons].m_defIndex = StringToInt(indexKey);
-			strcopy(g_Weapons[weapons].m_displayName, MAX_LENGTH_DISPLAY, nameKey);
-			strcopy(g_Weapons[weapons].m_className, MAX_LENGTH_CLASSNAME, classKey);
-			g_Weapons[weapons].m_slot = kvWeapons.GetNum("slot", -1);
-
-			g_WeaponDefIndex.SetValue(indexKey, weapons);
-			g_WeaponClassName.SetValue(classKey, weapons);
-			weapons++;
-		}
-		while (kvWeapons.GotoNextKey());
-	}
-
-	delete kvWeapons;
-	LogMessage("Loaded %d weapons.", weapons);
-
-	// Parse Stickers.
-	BuildPath(Path_SM, config, sizeof(config), CONFIG_PATH_STICKERS);
-	KeyValues kvStickers = new KeyValues("Stickers");
-
-	if (!kvStickers.ImportFromFile(config))
-	{
-		ThrowError("Can't find or read the file %s...", config);
-		delete kvStickers;
-		return;
-	}
-
-	kvStickers.Rewind();
-	int sets = 0; // stickers sets counter.
-	int stickers = 0;
-
-	if (kvStickers.GotoFirstSubKey())
-	{
-		int k = 0; // stickers counter.
-		do
-		{
-			static char nameKey[MAX_LENGTH_DISPLAY];
-			kvStickers.GetSectionName(nameKey, sizeof(nameKey));
-
-			g_StickerSets[sets].m_defIndex = kvStickers.GetNum("id");
-			strcopy(g_StickerSets[sets].m_displayName, MAX_LENGTH_DISPLAY, nameKey);
-
-			if (kvStickers.GotoFirstSubKey())
-			{
-				do
-				{
-					kvStickers.GetSectionName(nameKey, sizeof(nameKey));
-					g_Sticker[sets][k].m_defIndex = kvStickers.GetNum("index");
-					strcopy(g_Sticker[sets][k].m_displayName, MAX_LENGTH_DISPLAY, nameKey);
-					k++;
-					stickers++;
-				} while (kvStickers.GotoNextKey());
-			}
-
-			kvStickers.GoBack();
-			g_stickerCount[sets] = k;
-
-			sets++; // increment sticker sets counter.
-			k = 0; // reset stickers counter.
-		}
-		while (kvStickers.GotoNextKey());
-	}
-
-	delete kvStickers;
-
-	g_stickerSetsCount = sets;
-	LogMessage("Loaded %d stickers sets [%i stickers].", sets, stickers);
-}
-
 void RefreshClientWeapon(int client, int index)
 {
 	// Invalid index or knife.
-	if (index < 0 || g_Weapons[index].m_slot == 2)
+	int defIndex = eItems_IsDefIndexKnife(index);
+	if (defIndex < 0 || eItems_IsDefIndexKnife(defIndex))
 	{
 		return;
 	}
@@ -493,49 +424,14 @@ void RefreshClientWeapon(int client, int index)
 	for (int i = 0; i < size; i++)
 	{
 		int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-		if (IsValidWeapon(weapon))
+		if (eItems_IsValidWeapon(weapon))
 		{
-			int temp = GetWeaponIndexByEntity(weapon);
+			int temp = eItems_GetWeaponNumByWeapon(weapon);
 			if (temp == index)
 			{
-				int clip = GetWeaponClipAmmo(weapon);
-				int reserve = GetWeaponReserveAmmo(weapon);
-
-				RemovePlayerItem(client, weapon);
-				RemoveEntity(weapon);
-
-				// Give new weapon.
-				weapon = GivePlayerItem(client, g_Weapons[index].m_className);
-				if (clip != -1 || reserve != -1)
-				{
-					DataPack pack = new DataPack();
-					pack.WriteCell(EntIndexToEntRef(weapon));
-					pack.WriteCell(clip);
-					pack.WriteCell(reserve);
-					RequestFrame(Frame_ResetAmmo, pack);
-				}
+				eItems_RespawnWeapon(client, weapon);
 				break;
 			}
 		}
 	}
-}
-
-/**
- * Callbacks.
- */
-public void Frame_ResetAmmo(DataPack data)
-{
-	data.Reset();
-	int weapon = EntRefToEntIndex(data.ReadCell());
-	int clip = data.ReadCell();
-	int reserve = data.ReadCell();
-	delete data;
-
-	if (weapon == INVALID_ENT_REFERENCE || !IsValidEntity(weapon))
-	{
-		return;
-	}
-
-	SetWeaponClipAmmo(weapon, clip);
-	SetWeaponReserveAmmo(weapon, reserve);
 }

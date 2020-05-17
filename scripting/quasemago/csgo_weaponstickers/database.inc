@@ -52,11 +52,18 @@ void UpdateClientStickers(int client, int index, int slot)
 		return;
 	}
 
+	int defIndex = eItems_GetWeaponDefIndexByWeaponNum(index);
+	if (defIndex < 0)
+	{
+		LogError("Invalid weapon defIndex for client index %d", client);
+		return;
+	}
+
 	// update reuse time.
 	g_playerReuseTime[client] = GetTime() + g_cvarReuseTime.IntValue;
 
 	char query[2048];
-	FormatEx(query, sizeof(query), "INSERT INTO %s (`steamid`, `index`, `slot%i_index`) VALUES (\"%s\", '%i', '%i') ON DUPLICATE KEY UPDATE slot%i_index = '%i';", MySQL_TABLE, slot, authId, index, g_PlayerWeapon[client][index].m_stickerIndex[slot], slot, g_PlayerWeapon[client][index].m_stickerIndex[slot]);
+	FormatEx(query, sizeof(query), "INSERT INTO %s (`steamid`, `defIndex`, `slot%i_defIndex`) VALUES (\"%s\", '%i', '%i') ON DUPLICATE KEY UPDATE slot%i_defIndex = '%i';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_stickerDefIndex[slot], slot, g_PlayerWeapon[client][index].m_stickerDefIndex[slot]);
 	g_Database.Query(SQLCallback_UpdateClientStickers, query);
 }
 
@@ -99,15 +106,15 @@ public void SQLCallback_Connect(Database db, const char[] error, any data)
 		"CREATE TABLE IF NOT EXISTS `%s` ( \
 			`id` INT NOT NULL AUTO_INCREMENT, \
 			`steamid` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL, \
-			`index` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL, \
-			`slot0_index` int(11) NOT NULL DEFAULT '0', \
-			`slot1_index` int(11) NOT NULL DEFAULT '0', \
-			`slot2_index` int(11) NOT NULL DEFAULT '0', \
-			`slot3_index` int(11) NOT NULL DEFAULT '0', \
-			`slot4_index` int(11) NOT NULL DEFAULT '0', \
-			`slot5_index` int(11) NOT NULL DEFAULT '0', \
+			`defIndex` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL, \
+			`slot0_defIndex` int(11) NOT NULL DEFAULT '0', \
+			`slot1_defIndex` int(11) NOT NULL DEFAULT '0', \
+			`slot2_defIndex` int(11) NOT NULL DEFAULT '0', \
+			`slot3_defIndex` int(11) NOT NULL DEFAULT '0', \
+			`slot4_defIndex` int(11) NOT NULL DEFAULT '0', \
+			`slot5_defIndex` int(11) NOT NULL DEFAULT '0', \
 			PRIMARY KEY (`id`), \
-			UNIQUE KEY (`steamid`, `index`) \
+			UNIQUE KEY (`steamid`, `defIndex`) \
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", MySQL_TABLE);
 		g_Database.Query(SQLCallback_CreateTable, query);
 
@@ -139,18 +146,21 @@ public void SQLCallback_LoadClientStickers(Database db, DBResultSet results, con
 			{
 				while (results.FetchRow())
 				{
-					// Get weapon index.
-					int index = results.FetchInt(2);
-
-					// Check if weapon is valid to stickers.
-					if (index != -1 && IsValidWeaponToChange(-1, g_Weapons[index].m_defIndex, _, true))
+					// Get weapon defIndex and check if is valid to stickers.
+					int defIndex = results.FetchInt(2);
+					if (defIndex > 0 && IsValidWeaponToChange(-1, defIndex, _, true))
 					{
-						g_PlayerWeapon[client][index].m_stickerIndex[0] = results.FetchInt(3);
-						g_PlayerWeapon[client][index].m_stickerIndex[1] = results.FetchInt(4);
-						g_PlayerWeapon[client][index].m_stickerIndex[2] = results.FetchInt(5);
-						g_PlayerWeapon[client][index].m_stickerIndex[3] = results.FetchInt(6);
-						g_PlayerWeapon[client][index].m_stickerIndex[4] = results.FetchInt(7);
-						g_PlayerWeapon[client][index].m_stickerIndex[5] = results.FetchInt(8);
+						// Get weapon index.
+						int index = eItems_GetWeaponNumByDefIndex(defIndex);
+						if (index != -1)
+						{
+							g_PlayerWeapon[client][index].m_stickerDefIndex[0] = results.FetchInt(3);
+							g_PlayerWeapon[client][index].m_stickerDefIndex[1] = results.FetchInt(4);
+							g_PlayerWeapon[client][index].m_stickerDefIndex[2] = results.FetchInt(5);
+							g_PlayerWeapon[client][index].m_stickerDefIndex[3] = results.FetchInt(6);
+							g_PlayerWeapon[client][index].m_stickerDefIndex[4] = results.FetchInt(7);
+							g_PlayerWeapon[client][index].m_stickerDefIndex[5] = results.FetchInt(8);
+						}
 					}
 				}
 			}

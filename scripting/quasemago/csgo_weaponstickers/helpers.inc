@@ -23,27 +23,11 @@ stock bool AddMenuItemEx(Menu menu, const char[] info, int style = ITEMDRAW_DEFA
 	return menu.AddItem(info, buffer, style);
 }
 
-stock bool IsValidWeapon(int entity)
-{
-	if (entity < 0 || !IsValidEntity(entity))
-	{
-		return false;
-	}
-
-	char classname[64];
-	if (!GetEntityClassname(entity, classname, sizeof(classname)))
-	{
-		return false;
-	}
-
-	return (strncmp(classname, "weapon_", 7, false) == 0);
-}
-
 stock bool ClientWeaponHasStickers(int client, int index)
 {
 	for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 	{
-		if (g_PlayerWeapon[client][index].m_stickerIndex[i] != 0)
+		if (g_PlayerWeapon[client][index].m_stickerDefIndex[i] != 0)
 		{
 			return true;
 		}
@@ -54,55 +38,6 @@ stock bool ClientWeaponHasStickers(int client, int index)
 stock int GetWeaponDefIndex(int weapon)
 {
 	return GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-}
-
-stock int GetWeaponIndexByEntity(int entity)
-{
-	if (!IsValidWeapon(entity))
-	{
-		return -1;
-	}
-
-	int defIndex = GetWeaponDefIndex(entity);
-	if (defIndex < 0)
-	{
-		return -1;
-	}
-
-	char strDefIndex[MAX_LENGTH_INDEX];
-	IntToString(defIndex, strDefIndex, sizeof(strDefIndex));
-
-	int index;
-	if (g_WeaponDefIndex.GetValue(strDefIndex, index))
-	{
-		return index;
-	}
-
-	return -1;
-}
-
-stock int GetWeaponIndexByClassname(const char[] classname)
-{
-	int index;
-	if (g_WeaponClassName.GetValue(classname, index))
-	{
-		return index;
-	}
-	return -1;
-}
-
-stock bool GetWeaponClassnameByDefIndex(int defIndex, char[] buffer, int size)
-{
-	char strDefIndex[MAX_LENGTH_INDEX];
-	IntToString(defIndex, strDefIndex, sizeof(strDefIndex));
-
-	int index;
-	if (g_WeaponDefIndex.GetValue(strDefIndex, index))
-	{
-		strcopy(buffer, size, g_Weapons[index].m_className);
-		return true;
-	}
-	return false;
 }
 
 stock int GetWeaponReserveAmmo(int weapon)
@@ -133,67 +68,19 @@ stock void SetWeaponClipAmmo(int weapon, int value)
 
 stock int GetRandomSticker()
 {
-	int stickerSet = Math_GetRandomInt(0, g_stickerSetsCount - 1);
-	int stickerIndex = Math_GetRandomInt(0, g_stickerCount[stickerSet] - 1);
-	return g_Sticker[stickerSet][stickerIndex].m_defIndex;
+	int index = Math_GetRandomInt(0, g_stickerCount - 1);
+	return eItems_GetStickerDefIndexByStickerNum(index);
 }
 
-stock int GetStickerIndexByDefIndex(int defIndex, int &stickerSet)
+stock int GetStickerSetNumByStickerNum(int num)
 {
-	for (int i = 0; i < g_stickerSetsCount; i++)
+	char strNum[16];
+	IntToString(num, strNum, sizeof(strNum));
+	
+	int value;
+	if (g_Stickers.GetValue(strNum, value))
 	{
-		for (int j = 0; j < g_stickerCount[i]; j++)
-		{
-			if (g_Sticker[i][j].m_defIndex == defIndex)
-			{
-				stickerSet = i;
-				return j;
-			}
-		}
-	}
-	return -1;
-}
-
-stock bool GetStickerNameByDefIndex(int defIndex, char[] buffer, int size)
-{
-	for (int i = 0; i < g_stickerSetsCount; i++)
-	{
-		for (int j = 0; j < g_stickerCount[i]; j++)
-		{
-			if (g_Sticker[i][j].m_defIndex == defIndex)
-			{
-				strcopy(buffer, size, g_Sticker[i][j].m_displayName);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-stock bool GetStickerNameByDefIndexInSet(int defIndex, int stickerSet, char[] buffer, int size)
-{
-	for (int i = 0; i < g_stickerCount[stickerSet]; i++)
-	{
-		if (g_Sticker[stickerSet][i].m_defIndex == defIndex)
-		{
-			strcopy(buffer, size, g_Sticker[stickerSet][i].m_displayName);
-			return true;
-		}
-	}
-	return false;
-}
-
-stock int GetStickerSetByStickerIndex(int index)
-{
-	for (int i = 0; i < g_stickerSetsCount; i++)
-	{
-		for (int j = 0; j < g_stickerCount[i]; j++)
-		{
-			if (j == index)
-			{
-				return i;
-			}
-		}
+		return value;
 	}
 	return -1;
 }
@@ -246,16 +133,11 @@ stock bool IsValidWeaponToChange(int client, int defIndex, bool message = false,
 		return false;
 	}
 
-	char classname[64];
-	if (!GetWeaponClassnameByDefIndex(defIndex, classname, sizeof(classname)))
+	if (eItems_IsDefIndexKnife(defIndex) && avoidKnife)
 	{
 		return false;
 	}
 
-	if (IsKnifeClassname(classname) && avoidKnife)
-	{
-		return false;
-	}
 	return true;
 }
 
