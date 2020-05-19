@@ -148,7 +148,7 @@ public void SQLCallback_LoadClientStickers(Database db, DBResultSet results, con
 				{
 					// Get weapon defIndex and check if is valid to stickers.
 					int defIndex = results.FetchInt(2);
-					if (defIndex > 0 && IsValidWeaponToChange(-1, defIndex, _, true))
+					if (defIndex > 0 && IsValidWeaponToChange(-1, defIndex))
 					{
 						// Get weapon index.
 						int index = eItems_GetWeaponNumByDefIndex(defIndex);

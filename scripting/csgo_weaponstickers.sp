@@ -124,7 +124,9 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errMax)
 public void OnAllPluginsLoaded()
 {
 	// Check for external ws plugins.
-	if ((FindConVar("sm_weapons_float_increment_size") != null) || (FindConVar("sm_weaponpaints_c4") != null))
+	if ((FindConVar("sm_weapons_float_increment_size") != null)
+		|| (FindConVar("sm_weaponpaints_c4") != null)
+		|| (FindConVar("sm_fakeinventory_version")))
 	{
 		g_hasExternalWs = true;
 	}
@@ -138,29 +140,39 @@ public void eItems_OnItemsSynced()
 	g_stickerCount = eItems_GetStickersCount();
 	g_stickerSetsCount = eItems_GetStickersSetsCount();
 
-	g_Stickers = new StringMap();
+	LogMessage("stickers=%i sets=%i", g_stickerCount, g_stickerSetsCount);
+	RequestFrame(Frame_ItemsSync);
+}
 
+public void Frame_ItemsSync(any data)
+{
+	// Load stickers.
 	for (int i = 0; i < g_stickerSetsCount; i++)
 	{
-		if (g_StickerSet[i] != null)
+		g_StickerSet[i].m_Id = eItems_GetStickerSetIdByStickerSetNum(i);
+		eItems_GetStickerSetDisplayNameByStickerSetNum(i, g_StickerSet[i].m_displayName, MAX_LENGTH_DISPLAY);
+
+		if (g_StickerSet[i].m_Stickers != null)
 		{
-			delete g_StickerSet[i];
+			delete g_StickerSet[i].m_Stickers;
 		}
 
-		g_StickerSet[i] = new ArrayList(1);
-		int id = eItems_GetStickerSetIdByStickerSetNum(i);
-
+		g_StickerSet[i].m_Stickers = new ArrayList(1);
 		for (int j = 0; j < g_stickerCount; j++)
 		{
-			if (eItems_IsStickerInSet(j, id))
+			if (eItems_IsStickerInSet(j, g_StickerSet[i].m_Id))
 			{
-				g_StickerSet[i].Push(j);
-				
-				static char num[16];
-				IntToString(j, num, sizeof(num));
-				g_Stickers.SetValue(num, i);
+				g_Sticker[j].m_setId = g_StickerSet[i].m_Id;
+				g_StickerSet[i].m_Stickers.Push(j);
 			}
 		}
+	}
+
+	// Stickers data.
+	for (int i = 0; i < g_stickerCount; i++)
+	{
+		g_Sticker[i].m_defIndex = eItems_GetStickerDefIndexByStickerNum(i);
+		eItems_GetStickerDisplayNameByStickerNum(i, g_Sticker[i].m_displayName, MAX_LENGTH_DISPLAY);
 	}
 }
 
@@ -176,6 +188,7 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
+	// Reset client.
 	g_playerReuseTime[client] = 0;
 	g_isStickerRefresh[client] = false;
 
@@ -231,7 +244,7 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 		if (index != -1)
 		{
 			int defIndex = eItems_GetWeaponDefIndexByClassName(classname);
-			if (ClientWeaponHasStickers(client, index) && IsValidWeaponToChange(-1, defIndex, _, true))
+			if (ClientWeaponHasStickers(client, index) && IsValidWeaponToChange(-1, defIndex))
 			{
 				// Check to avoid conflicts with external ws.
 				if (!g_hasExternalWs)
@@ -252,7 +265,7 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 					return;
 				}
 
-				Address pEconItemView = pWeapon + view_as<Address>(g_EconItemOffset);
+				Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
 
 				bool updated = false;
 				for (int i = 0; i < MAX_STICKERS_SLOT; i++)
@@ -395,20 +408,20 @@ void LoadSDK()
 	}
 
 	// Get Offsets.
-	FindGameConfOffset(gameConf, g_EconItemView_AttributeListOffset, "CEconItemView::m_AttributeList");
-	FindGameConfOffset(gameConf, g_EconItemAttributeDefinition_iAttributeDefinitionIndexOffset, "CEconItemAttributeDefinition::m_iAttributeDefinitionIndex");
-	FindGameConfOffset(gameConf, g_Attributes_iAttributeDefinitionIndexOffset, "m_Attributes::m_iAttributeDefinitionIndex");
-	FindGameConfOffset(gameConf, g_Attributes_iRawValue32Offset, "m_Attributes::m_iRawValue32");
-	FindGameConfOffset(gameConf, g_Attributes_iRawInitialValue32Offset, "m_Attributes::m_iRawInitialValue32");
-	FindGameConfOffset(gameConf, g_Attributes_nRefundableCurrencyOffset, "m_Attributes::m_nRefundableCurrency");
-	FindGameConfOffset(gameConf, g_Attributes_bSetBonusOffset, "m_Attributes::m_bSetBonus");
-	FindGameConfOffset(gameConf, g_AttributeList_ReadOffset, "CAttributeList::read");
-	FindGameConfOffset(gameConf, g_AttributeList_CountOffset, "CAttributeList::count");
+	FindGameConfOffset(gameConf, g_econItemView_AttributeListOffset, "CEconItemView::m_AttributeList");
+	FindGameConfOffset(gameConf, g_econItemAttributeDefinition_iAttributeDefinitionIndexOffset, "CEconItemAttributeDefinition::m_iAttributeDefinitionIndex");
+	FindGameConfOffset(gameConf, g_attributes_iAttributeDefinitionIndexOffset, "m_Attributes::m_iAttributeDefinitionIndex");
+	FindGameConfOffset(gameConf, g_attributes_iRawValue32Offset, "m_Attributes::m_iRawValue32");
+	FindGameConfOffset(gameConf, g_attributes_iRawInitialValue32Offset, "m_Attributes::m_iRawInitialValue32");
+	FindGameConfOffset(gameConf, g_attributes_nRefundableCurrencyOffset, "m_Attributes::m_nRefundableCurrency");
+	FindGameConfOffset(gameConf, g_attributes_bSetBonusOffset, "m_Attributes::m_bSetBonus");
+	FindGameConfOffset(gameConf, g_attributeList_ReadOffset, "CAttributeList::read");
+	FindGameConfOffset(gameConf, g_attributeList_CountOffset, "CAttributeList::count");
 
 	delete gameConf;
 
 	// Find netprops Offsets.
-	g_EconItemOffset = FindSendPropOffset("CBaseCombatWeapon", "m_Item");
+	g_econItemOffset = FindSendPropOffset("CBaseCombatWeapon", "m_Item");
 }
 
 void RefreshClientWeapon(int client, int index)
