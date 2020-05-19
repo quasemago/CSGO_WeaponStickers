@@ -16,186 +16,29 @@ stock int FindSendPropOffset(char[] cls, char[] prop)
 	return offset;
 }
 
-stock bool AddMenuItemEx(Menu menu, const char[] info, int style = ITEMDRAW_DEFAULT, const char[] format, any ...)
+stock bool AddMenuItemFormat(Menu menu, const char[] info, int style = ITEMDRAW_DEFAULT, const char[] format, any ...)
 {
 	char buffer[254];
 	VFormat(buffer, sizeof(buffer), format, 5);
 	return menu.AddItem(info, buffer, style);
 }
 
-stock bool IsValidWeapon(int entity)
-{
-	if (entity < 0 || !IsValidEntity(entity))
-	{
-		return false;
-	}
-
-	char classname[64];
-	if (!GetEntityClassname(entity, classname, sizeof(classname)))
-	{
-		return false;
-	}
-
-	return (strncmp(classname, "weapon_", 7, false) == 0);
-}
-
 stock bool ClientWeaponHasStickers(int client, int index)
 {
 	for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 	{
-		if (g_PlayerWeapon[client][index].m_stickerIndex[i] != 0)
+		if (g_PlayerWeapon[client][index].m_stickerDefIndex[i] != 0)
 		{
 			return true;
 		}
 	}
 	return false;
-}
-
-stock int GetWeaponDefIndex(int weapon)
-{
-	return GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-}
-
-stock int GetWeaponIndexByEntity(int entity)
-{
-	if (!IsValidWeapon(entity))
-	{
-		return -1;
-	}
-
-	int defIndex = GetWeaponDefIndex(entity);
-	if (defIndex < 0)
-	{
-		return -1;
-	}
-
-	char strDefIndex[MAX_LENGTH_INDEX];
-	IntToString(defIndex, strDefIndex, sizeof(strDefIndex));
-
-	int index;
-	if (g_WeaponDefIndex.GetValue(strDefIndex, index))
-	{
-		return index;
-	}
-
-	return -1;
-}
-
-stock int GetWeaponIndexByClassname(const char[] classname)
-{
-	int index;
-	if (g_WeaponClassName.GetValue(classname, index))
-	{
-		return index;
-	}
-	return -1;
-}
-
-stock bool GetWeaponClassnameByDefIndex(int defIndex, char[] buffer, int size)
-{
-	char strDefIndex[MAX_LENGTH_INDEX];
-	IntToString(defIndex, strDefIndex, sizeof(strDefIndex));
-
-	int index;
-	if (g_WeaponDefIndex.GetValue(strDefIndex, index))
-	{
-		strcopy(buffer, size, g_Weapons[index].m_className);
-		return true;
-	}
-	return false;
-}
-
-stock int GetWeaponReserveAmmo(int weapon)
-{
-	return GetEntProp(weapon, Prop_Send, "m_iPrimaryReserveAmmoCount");
-}
-
-stock void SetWeaponReserveAmmo(int weapon, int value)
-{
-	if (value >= 0)
-	{
-		SetEntProp(weapon, Prop_Send, "m_iPrimaryReserveAmmoCount", value);
-	}
-}
-
-stock int GetWeaponClipAmmo(int weapon)
-{
-	return GetEntProp(weapon, Prop_Send, "m_iClip1");
-}
-
-stock void SetWeaponClipAmmo(int weapon, int value)
-{
-	if (value >= 0)
-	{
-		SetEntProp(weapon, Prop_Send, "m_iClip1", value);
-	}
 }
 
 stock int GetRandomSticker()
 {
-	int stickerSet = Math_GetRandomInt(0, g_stickerSetsCount - 1);
-	int stickerIndex = Math_GetRandomInt(0, g_stickerCount[stickerSet] - 1);
-	return g_Sticker[stickerSet][stickerIndex].m_defIndex;
-}
-
-stock int GetStickerIndexByDefIndex(int defIndex, int &stickerSet)
-{
-	for (int i = 0; i < g_stickerSetsCount; i++)
-	{
-		for (int j = 0; j < g_stickerCount[i]; j++)
-		{
-			if (g_Sticker[i][j].m_defIndex == defIndex)
-			{
-				stickerSet = i;
-				return j;
-			}
-		}
-	}
-	return -1;
-}
-
-stock bool GetStickerNameByDefIndex(int defIndex, char[] buffer, int size)
-{
-	for (int i = 0; i < g_stickerSetsCount; i++)
-	{
-		for (int j = 0; j < g_stickerCount[i]; j++)
-		{
-			if (g_Sticker[i][j].m_defIndex == defIndex)
-			{
-				strcopy(buffer, size, g_Sticker[i][j].m_displayName);
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-stock bool GetStickerNameByDefIndexInSet(int defIndex, int stickerSet, char[] buffer, int size)
-{
-	for (int i = 0; i < g_stickerCount[stickerSet]; i++)
-	{
-		if (g_Sticker[stickerSet][i].m_defIndex == defIndex)
-		{
-			strcopy(buffer, size, g_Sticker[stickerSet][i].m_displayName);
-			return true;
-		}
-	}
-	return false;
-}
-
-stock int GetStickerSetByStickerIndex(int index)
-{
-	for (int i = 0; i < g_stickerSetsCount; i++)
-	{
-		for (int j = 0; j < g_stickerCount[i]; j++)
-		{
-			if (j == index)
-			{
-				return i;
-			}
-		}
-	}
-	return -1;
+	int index = Math_GetRandomInt(0, g_stickerCount - 1);
+	return g_Sticker[index].m_defIndex;
 }
 
 stock int GetWeaponSupportedStickerSlots(int weapon)
@@ -206,7 +49,7 @@ stock int GetWeaponSupportedStickerSlots(int weapon)
 		return -1;
 	}
 
-	Address pItemDefition = SDKCall(g_SDKGetItemDefinition, pWeapon + view_as<Address>(g_EconItemOffset));
+	Address pItemDefition = SDKCall(g_SDKGetItemDefinition, pWeapon + view_as<Address>(g_econItemOffset));
 	if (pItemDefition == Address_Null)
 	{
 		return -1;
@@ -215,17 +58,17 @@ stock int GetWeaponSupportedStickerSlots(int weapon)
 	return SDKCall(g_SDKGetNumSupportedStickerSlots, pItemDefition);
 }
 
-stock bool IsValidWeaponToChange(int client, int defIndex, bool message = false, bool avoidKnife = false)
+stock bool IsValidWeaponToChange(int client, int defIndex, bool message = false)
 {
 	if (defIndex <= 0)
 	{
 		return false;
 	}
-	else if (defIndex == 42 || defIndex == 59)
+	else if (eItems_IsDefIndexKnife(defIndex))
 	{
 		if (message)
 		{
-			CPrintToChat(client, "You can't change default knifes!");
+			CPrintToChat(client, "You can't change knifes!");
 		}
 		return false;
 	}
@@ -243,17 +86,6 @@ stock bool IsValidWeaponToChange(int client, int defIndex, bool message = false,
 		{
 			CPrintToChat(client, "You can't change grenades!");
 		}
-		return false;
-	}
-
-	char classname[64];
-	if (!GetWeaponClassnameByDefIndex(defIndex, classname, sizeof(classname)))
-	{
-		return false;
-	}
-
-	if (IsKnifeClassname(classname) && avoidKnife)
-	{
 		return false;
 	}
 	return true;
@@ -281,26 +113,26 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 	}
 
 	// Get item attribute list.
-	Address pAttributeList = pEconItemView + view_as<Address>(g_EconItemView_AttributeListOffset);
+	Address pAttributeList = pEconItemView + view_as<Address>(g_econItemView_AttributeListOffset);
 
 	// Get attributes data.
-	int attrDefIndex = LoadFromAddress(pAttributeDef + view_as<Address>(g_EconItemAttributeDefinition_iAttributeDefinitionIndexOffset), NumberType_Int16);
-	int attrCount = LoadFromAddress(pAttributeList + view_as<Address>(g_AttributeList_CountOffset), NumberType_Int32);
+	int attrDefIndex = LoadFromAddress(pAttributeDef + view_as<Address>(g_econItemAttributeDefinition_iAttributeDefinitionIndexOffset), NumberType_Int16);
+	int attrCount = LoadFromAddress(pAttributeList + view_as<Address>(g_attributeList_CountOffset), NumberType_Int32);
 
 	// Checks if the item already has the attribute, then update value.
 	int k = 0;
 	for (int i = 0; i < attrCount; i++)
 	{
-		Address pAttribute = DereferencePointer(pAttributeList + view_as<Address>(g_AttributeList_ReadOffset)) + view_as<Address>(k);
+		Address pAttribute = DereferencePointer(pAttributeList + view_as<Address>(g_attributeList_ReadOffset)) + view_as<Address>(k);
 
-		int defIndex = LoadFromAddress(pAttribute + view_as<Address>(g_Attributes_iAttributeDefinitionIndexOffset), NumberType_Int16);
+		int defIndex = LoadFromAddress(pAttribute + view_as<Address>(g_attributes_iAttributeDefinitionIndexOffset), NumberType_Int16);
 		if (defIndex == attrDefIndex)
 		{
 			// Checks if the value is different.
-			int value = LoadFromAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), NumberType_Int32);
+			int value = LoadFromAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), NumberType_Int32);
 			if (value != attrValue)
 			{
-				StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), attrValue, NumberType_Int32);
+				StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), attrValue, NumberType_Int32);
 				return true;
 			}
 			return false;
@@ -314,25 +146,33 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 	if (g_ServerPlatform == OS_Windows)
 	{
 		MemoryBlock block = new MemoryBlock(24);
+
+		// Generate attribute block.
 		Address pAttribute = block.Address;
-		StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
-		StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), attrValue, NumberType_Int32);
-		StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
-		StoreToAddress(pAttribute + view_as<Address>(g_Attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
-		StoreToAddress(pAttribute + view_as<Address>(g_Attributes_bSetBonusOffset), 0, NumberType_Int8);
 
 		if (IsValidAddress(pAttribute))
 		{
+			// Set attribute values.
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_bSetBonusOffset), 0, NumberType_Int8);
+
+			// Attach attribute in weapon.
 			SDKCall(g_SDKAddAttribute, pAttributeList, DereferencePointer(pEconItemView + view_as<Address>(172)), pAttribute);
+
 			delete block; // Needed?
 			return true;
 		}
 	}
 	else
 	{
+		// Generate attribute.
 		Address pAttribute = SDKCall(g_SDKGenerateAttribute, g_pItemSystem, attrDefIndex, view_as<float>(attrValue));
 		if (IsValidAddress(pAttribute))
 		{
+			// Attach attribute in weapon.
 			SDKCall(g_SDKAddAttribute, pAttributeList, pAttribute);
 			return true;
 		}
