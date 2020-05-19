@@ -146,25 +146,33 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 	if (g_ServerPlatform == OS_Windows)
 	{
 		MemoryBlock block = new MemoryBlock(24);
+
+		// Generate attribute block.
 		Address pAttribute = block.Address;
-		StoreToAddress(pAttribute + view_as<Address>(g_attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
-		StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), attrValue, NumberType_Int32);
-		StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
-		StoreToAddress(pAttribute + view_as<Address>(g_attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
-		StoreToAddress(pAttribute + view_as<Address>(g_attributes_bSetBonusOffset), 0, NumberType_Int8);
 
 		if (IsValidAddress(pAttribute))
 		{
+			// Set attribute values.
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_attributes_bSetBonusOffset), 0, NumberType_Int8);
+
+			// Attach attribute in weapon.
 			SDKCall(g_SDKAddAttribute, pAttributeList, DereferencePointer(pEconItemView + view_as<Address>(172)), pAttribute);
+
 			delete block; // Needed?
 			return true;
 		}
 	}
 	else
 	{
+		// Generate attribute.
 		Address pAttribute = SDKCall(g_SDKGenerateAttribute, g_pItemSystem, attrDefIndex, view_as<float>(attrValue));
 		if (IsValidAddress(pAttribute))
 		{
+			// Attach attribute in weapon.
 			SDKCall(g_SDKAddAttribute, pAttributeList, pAttribute);
 			return true;
 		}

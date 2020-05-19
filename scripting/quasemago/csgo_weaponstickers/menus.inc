@@ -291,14 +291,14 @@ static void ShowWeaponStickersSetMenu(int client, int slot, int stickerSet, cons
 
 			count++;
 
-			PrintToChatAll("s=%s", g_Sticker[i].m_displayName);
+			//PrintToChatAll("s=%s", g_Sticker[i].m_displayName);
 
 			static char index[16];
 			IntToString(i, index, sizeof(index));
 			menu.AddItem(index, g_Sticker[i].m_displayName);
 		}
 		
-		PrintToChatAll("x=%i", count);
+		//PrintToChatAll("x=%i", count);
 	}
 	else
 	{
