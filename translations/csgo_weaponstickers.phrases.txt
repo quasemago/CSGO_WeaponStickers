@@ -2,8 +2,8 @@
 {
 	"Menu Stickers Title"
 	{
-		"en"		"[Weapon Stickers].\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
-		"pt"		"[Weapon Stickers].\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
+		"en"		"[Weapon Stickers] Stickers.\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
+		"pt"		"[Weapon Stickers] Stickers.\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
 	}
 	"Menu Stickers Slot Already Title"
 	{
@@ -138,5 +138,15 @@
 	{
 		"en"		"All Slots"
 		"pt"		"Todos Slots"
+	}
+	"Default"
+	{
+		"en"		"Default"
+		"pt"		"Padrão"
+	}
+	"Platform Unsupported"
+	{
+		"en"		"This feature is not supported by the server's operating system."
+		"pt"		"Esse recurso não é suportado pelo sistema operacional do servidor."
 	}
 }
