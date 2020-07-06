@@ -39,7 +39,7 @@ public int Native_SetWeaponSticker(Handle plugins, int numParams)
 		defIndex = GetRandomSticker();
 	}
 
-	Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
+	Address pEconItemView = pWeapon + view_as<Address>(g_EconItemOffset);
 	SetAttributeValue(client, pEconItemView, defIndex, "sticker slot %i id", slot);
 	SetAttributeValue(client, pEconItemView, view_as<int>(GetNativeCell(5)), "sticker slot %i wear", slot);
 

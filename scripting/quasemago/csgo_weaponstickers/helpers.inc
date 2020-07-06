@@ -23,11 +23,17 @@ stock bool AddMenuItemFormat(Menu menu, const char[] info, int style = ITEMDRAW_
 	return menu.AddItem(info, buffer, style);
 }
 
-stock bool ClientWeaponHasStickers(int client, int index)
+stock bool ClientWeaponHasStickers(int client, int defIndex)
 {
+	int index = eItems_GetWeaponNumByDefIndex(defIndex);
+	if (index < 0)
+	{
+		return false;
+	}
+
 	for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 	{
-		if (g_PlayerWeapon[client][index].m_stickerDefIndex[i] != 0)
+		if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
 		{
 			return true;
 		}
@@ -49,7 +55,7 @@ stock int GetWeaponSupportedStickerSlots(int weapon)
 		return -1;
 	}
 
-	Address pItemDefition = SDKCall(g_SDKGetItemDefinition, pWeapon + view_as<Address>(g_econItemOffset));
+	Address pItemDefition = SDKCall(g_SDKGetItemDefinition, pWeapon + view_as<Address>(g_EconItemOffset));
 	if (pItemDefition == Address_Null)
 	{
 		return -1;
@@ -58,46 +64,30 @@ stock int GetWeaponSupportedStickerSlots(int weapon)
 	return SDKCall(g_SDKGetNumSupportedStickerSlots, pItemDefition);
 }
 
-stock bool IsValidWeaponToChange(int client, int defIndex, bool message = false)
+stock bool IsValidDefIndex(int defIndex)
 {
-	if (defIndex <= 0)
+	static int blackList[] =
 	{
-		return false;
-	}
-	else if (eItems_IsDefIndexKnife(defIndex))
-	{
-		if (message)
-		{
-			CPrintToChat(client, "You can't change knifes!");
-		}
-		return false;
-	}
-	else if (defIndex == 49)
-	{
-		if (message)
-		{
-			CPrintToChat(client, "You can't change c4!");
-		}
-		return false;
-	}
-	else if (defIndex >= 43 && defIndex <= 48)
-	{
-		if (message)
-		{
-			CPrintToChat(client, "You can't change grenades!");
-		}
-		return false;
-	}
-	return true;
-}
+		20, 31, 37, 41, 42, 49, 57, 59, 68, 69, 70, 72, 75, 76, 78, 81, 82, 83, 84, 85
+	};
 
-stock bool IsKnifeClassname(const char[] classname)
-{
-	if ((StrContains(classname, "knife") > -1 && strcmp(classname, "weapon_knifegg") != 0) || StrContains(classname, "bayonet") > -1)
+	// Avoid invalid def index, grenades or knifes.
+	if (defIndex <= 0 || (defIndex >= 43 && defIndex <= 48) || eItems_IsDefIndexKnife(defIndex))
 	{
-		return true;
+		return false;
 	}
-	return false;
+
+	// Check defIndex blacklist.
+	int size = sizeof(blackList);
+	for (int i = 0; i < size; i++)
+	{
+		if (defIndex == blackList[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, const char[] format, any ...)
@@ -113,26 +103,26 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 	}
 
 	// Get item attribute list.
-	Address pAttributeList = pEconItemView + view_as<Address>(g_econItemView_AttributeListOffset);
+	Address pAttributeList = pEconItemView + view_as<Address>(g_EconItemView_AttributeListOffset);
 
 	// Get attributes data.
-	int attrDefIndex = LoadFromAddress(pAttributeDef + view_as<Address>(g_econItemAttributeDefinition_iAttributeDefinitionIndexOffset), NumberType_Int16);
-	int attrCount = LoadFromAddress(pAttributeList + view_as<Address>(g_attributeList_CountOffset), NumberType_Int32);
+	int attrDefIndex = LoadFromAddress(pAttributeDef + view_as<Address>(g_EconItemAttributeDefinition_iAttributeDefinitionIndexOffset), NumberType_Int16);
+	int attrCount = LoadFromAddress(pAttributeList + view_as<Address>(g_AttributeList_CountOffset), NumberType_Int32);
 
 	// Checks if the item already has the attribute, then update value.
 	int k = 0;
 	for (int i = 0; i < attrCount; i++)
 	{
-		Address pAttribute = DereferencePointer(pAttributeList + view_as<Address>(g_attributeList_ReadOffset)) + view_as<Address>(k);
+		Address pAttribute = DereferencePointer(pAttributeList + view_as<Address>(g_AttributeList_ReadOffset)) + view_as<Address>(k);
 
-		int defIndex = LoadFromAddress(pAttribute + view_as<Address>(g_attributes_iAttributeDefinitionIndexOffset), NumberType_Int16);
+		int defIndex = LoadFromAddress(pAttribute + view_as<Address>(g_Attributes_iAttributeDefinitionIndexOffset), NumberType_Int16);
 		if (defIndex == attrDefIndex)
 		{
 			// Checks if the value is different.
-			int value = LoadFromAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), NumberType_Int32);
+			int value = LoadFromAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), NumberType_Int32);
 			if (value != attrValue)
 			{
-				StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), attrValue, NumberType_Int32);
+				StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), attrValue, NumberType_Int32);
 				return true;
 			}
 			return false;
@@ -145,19 +135,18 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 	// Didn't find it. Add a new one.
 	if (g_ServerPlatform == OS_Windows)
 	{
-		MemoryBlock block = new MemoryBlock(24);
-
 		// Generate attribute block.
+		MemoryBlock block = new MemoryBlock(24);
 		Address pAttribute = block.Address;
 
 		if (IsValidAddress(pAttribute))
 		{
 			// Set attribute values.
-			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
-			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawValue32Offset), attrValue, NumberType_Int32);
-			StoreToAddress(pAttribute + view_as<Address>(g_attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
-			StoreToAddress(pAttribute + view_as<Address>(g_attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
-			StoreToAddress(pAttribute + view_as<Address>(g_attributes_bSetBonusOffset), 0, NumberType_Int8);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_bSetBonusOffset), 0, NumberType_Int8);
 
 			// Attach attribute in weapon.
 			SDKCall(g_SDKAddAttribute, pAttributeList, DereferencePointer(pEconItemView + view_as<Address>(172)), pAttribute);
@@ -205,7 +194,7 @@ stock int unsigned_compare(int a, int b)
 	return ((a >>> 31) > (b >>> 31)) ? 1 : -1;
 }
 
-// Snipped from smlib
+// Snipped from smlib.
 #define SIZE_OF_INT		2147483647		// without 0
 stock int Math_GetRandomInt(int min, int max)
 {

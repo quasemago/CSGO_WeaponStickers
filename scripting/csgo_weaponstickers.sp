@@ -38,9 +38,6 @@
 /**
  * Sub.
  */
-bool g_isLateLoad = false;
-bool g_hasExternalWs = false;
-
 #include "quasemago/csgo_weaponstickers/globals.inc"
 #include "quasemago/csgo_weaponstickers/helpers.inc"
 #include "quasemago/csgo_weaponstickers/commands.inc"
@@ -125,8 +122,7 @@ public void OnAllPluginsLoaded()
 {
 	// Check for external ws plugins.
 	if ((FindConVar("sm_weapons_float_increment_size") != null)
-		|| (FindConVar("sm_weaponpaints_c4") != null)
-		|| (FindConVar("sm_fakeinventory_version")))
+		|| (FindConVar("sm_weaponpaints_c4") != null))
 	{
 		g_hasExternalWs = true;
 	}
@@ -140,7 +136,6 @@ public void eItems_OnItemsSynced()
 	g_stickerCount = eItems_GetStickersCount();
 	g_stickerSetsCount = eItems_GetStickersSetsCount();
 
-	LogMessage("stickers=%i sets=%i", g_stickerCount, g_stickerSetsCount);
 	RequestFrame(Frame_ItemsSync);
 }
 
@@ -168,7 +163,6 @@ public void Frame_ItemsSync(any data)
 		}
 	}
 
-	// Stickers data.
 	for (int i = 0; i < g_stickerCount; i++)
 	{
 		g_Sticker[i].m_defIndex = eItems_GetStickerDefIndexByStickerNum(i);
@@ -178,7 +172,7 @@ public void Frame_ItemsSync(any data)
 
 public void OnClientPostAdminCheck(int client)
 {
-	if (IsFakeClient(client) || !g_cvarEnabled.BoolValue)
+	if (!g_cvarEnabled.BoolValue || IsFakeClient(client))
 	{
 		return;
 	}
@@ -188,7 +182,6 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnClientDisconnect(int client)
 {
-	// Reset client.
 	g_playerReuseTime[client] = 0;
 	g_isStickerRefresh[client] = false;
 
@@ -196,11 +189,10 @@ public void OnClientDisconnect(int client)
 	{
 		for (int j = 0; j < MAX_STICKERS_SLOT; j++)
 		{
-			g_PlayerWeapon[client][i].m_stickerDefIndex[j] = 0;
+			g_PlayerWeapon[client][i].m_sticker[j] = DEFAULT_PAINT;
 		}
 	}
 
-	// Forward event to modules.
 	MenusClientDisconnect(client);
 }
 
@@ -216,16 +208,14 @@ public Action OnGiveNamedItemPre(int client, char classname[64], CEconItemView &
 
 	if (IsClientInGame(client) && !IsFakeClient(client))
 	{
-		if (IsKnifeClassname(classname))
+		int defIndex = eItems_GetWeaponDefIndexByClassName(classname);
+		if (IsValidDefIndex(defIndex))
 		{
-			return Plugin_Continue;
-		}
-
-		int index = eItems_GetWeaponNumByClassName(classname);
-		if (index != -1 && ClientWeaponHasStickers(client, index))
-		{
-			ignoredCEconItemView = true;
-			return Plugin_Changed;
+			if (ClientWeaponHasStickers(client, defIndex))
+			{
+				ignoredCEconItemView = true;
+				return Plugin_Changed;
+			}
 		}
 	}
 	return Plugin_Continue;
@@ -240,11 +230,11 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 
 	if (IsClientInGame(client) && !IsFakeClient(client) && IsValidEntity(entity))
 	{
-		int index = eItems_GetWeaponNumByClassName(classname);
-		if (index != -1)
+		int defIndex = eItems_GetWeaponDefIndexByWeapon(entity);
+		if (IsValidDefIndex(defIndex) && ClientWeaponHasStickers(client, defIndex))
 		{
-			int defIndex = eItems_GetWeaponDefIndexByClassName(classname);
-			if (ClientWeaponHasStickers(client, index) && IsValidWeaponToChange(-1, defIndex))
+			int index = eItems_GetWeaponNumByDefIndex(defIndex);
+			if (index != -1)
 			{
 				// Check to avoid conflicts with external ws.
 				if (!g_hasExternalWs)
@@ -265,27 +255,28 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 					return;
 				}
 
-				Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
-
+				Address pEconItemView = pWeapon + view_as<Address>(g_EconItemOffset);
+			
 				bool updated = false;
 				for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 				{
-					if (g_PlayerWeapon[client][index].m_stickerDefIndex[i] != 0)
+					if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
 					{
 						// Sticker updated.
 						updated = true;
 
-						// TODO: add Scale and Rotation.
-						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_stickerDefIndex[i], "sticker slot %i id", i);
+						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_sticker[i], "sticker slot %i id", i);
 						SetAttributeValue(client, pEconItemView, view_as<int>(0.0), "sticker slot %i wear", i);
+
+						// TODO: Add scale and rotation.
 					}
 				}
 
 				// Update viewmodel if enabled.
-				if (g_isStickerRefresh[client] && updated)
+				if (updated && g_isStickerRefresh[client])
 				{
 					g_isStickerRefresh[client] = false;
-
+			
 					if (g_cvarUpdateViewModel.BoolValue)
 					{
 						PTaH_ForceFullUpdate(client);
@@ -408,27 +399,34 @@ void LoadSDK()
 	}
 
 	// Get Offsets.
-	FindGameConfOffset(gameConf, g_econItemView_AttributeListOffset, "CEconItemView::m_AttributeList");
-	FindGameConfOffset(gameConf, g_econItemAttributeDefinition_iAttributeDefinitionIndexOffset, "CEconItemAttributeDefinition::m_iAttributeDefinitionIndex");
-	FindGameConfOffset(gameConf, g_attributes_iAttributeDefinitionIndexOffset, "m_Attributes::m_iAttributeDefinitionIndex");
-	FindGameConfOffset(gameConf, g_attributes_iRawValue32Offset, "m_Attributes::m_iRawValue32");
-	FindGameConfOffset(gameConf, g_attributes_iRawInitialValue32Offset, "m_Attributes::m_iRawInitialValue32");
-	FindGameConfOffset(gameConf, g_attributes_nRefundableCurrencyOffset, "m_Attributes::m_nRefundableCurrency");
-	FindGameConfOffset(gameConf, g_attributes_bSetBonusOffset, "m_Attributes::m_bSetBonus");
-	FindGameConfOffset(gameConf, g_attributeList_ReadOffset, "CAttributeList::read");
-	FindGameConfOffset(gameConf, g_attributeList_CountOffset, "CAttributeList::count");
+	FindGameConfOffset(gameConf, g_EconItemView_AttributeListOffset, "CEconItemView::m_AttributeList");
+	FindGameConfOffset(gameConf, g_EconItemAttributeDefinition_iAttributeDefinitionIndexOffset, "CEconItemAttributeDefinition::m_iAttributeDefinitionIndex");
+	FindGameConfOffset(gameConf, g_Attributes_iAttributeDefinitionIndexOffset, "m_Attributes::m_iAttributeDefinitionIndex");
+	FindGameConfOffset(gameConf, g_Attributes_iRawValue32Offset, "m_Attributes::m_iRawValue32");
+	FindGameConfOffset(gameConf, g_Attributes_iRawInitialValue32Offset, "m_Attributes::m_iRawInitialValue32");
+	FindGameConfOffset(gameConf, g_Attributes_nRefundableCurrencyOffset, "m_Attributes::m_nRefundableCurrency");
+	FindGameConfOffset(gameConf, g_Attributes_bSetBonusOffset, "m_Attributes::m_bSetBonus");
+	FindGameConfOffset(gameConf, g_AttributeList_ReadOffset, "CAttributeList::read");
+	FindGameConfOffset(gameConf, g_AttributeList_CountOffset, "CAttributeList::count");
 
 	delete gameConf;
 
 	// Find netprops Offsets.
-	g_econItemOffset = FindSendPropOffset("CBaseCombatWeapon", "m_Item");
+	g_EconItemOffset = FindSendPropOffset("CBaseCombatWeapon", "m_Item");
 }
 
 void RefreshClientWeapon(int client, int index)
 {
-	// Invalid index or knife.
-	int defIndex = eItems_IsDefIndexKnife(index);
-	if (defIndex < 0 || eItems_IsDefIndexKnife(defIndex))
+	// Validate weapon defIndex or knife.
+	int defIndex = eItems_GetWeaponDefIndexByWeaponNum(index);
+	if (!IsValidDefIndex(defIndex) || eItems_IsDefIndexKnife(defIndex))
+	{
+		return;
+	}
+
+	// Get weapon classname.
+	char classname[MAX_LENGTH_CLASSNAME];
+	if (!eItems_GetWeaponClassNameByWeaponNum(index, classname, sizeof(classname)))
 	{
 		return;
 	}

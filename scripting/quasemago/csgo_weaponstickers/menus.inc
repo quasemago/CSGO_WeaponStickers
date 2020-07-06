@@ -1,4 +1,3 @@
-// Temp vars.
 static int g_menuSite[MAXPLAYERS + 1] = {0, ...};
 static int g_tempSlot[MAXPLAYERS + 1] = {-1, ...};
 static int g_tempMaxSlots[MAXPLAYERS + 1] = {0, ...};
@@ -27,8 +26,8 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		return;
 	}
 
-	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (!IsValidEntity(weapon) || !IsValidWeaponToChange(client, eItems_GetWeaponDefIndexByWeapon(weapon)))
+	int weapon = eItems_GetActiveWeapon(client);
+	if (!eItems_IsValidWeapon(weapon) || !IsValidDefIndex(eItems_GetWeaponDefIndexByWeapon(weapon)))
 	{
 		CPrintToChat(client, "%t", "Invalid Stickers Weapon");
 		return;
@@ -41,14 +40,14 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		return;
 	}
 
-	int weaponIndex = eItems_GetWeaponNumByWeapon(weapon);
-	if (weaponIndex < 0)
+	int index = eItems_GetWeaponNumByWeapon(weapon);
+	if (index < 0)
 	{
 		CPrintToChat(client, "%t", "Validate Error");
 		return;
 	}
 
-	g_tempIndex[client] = weaponIndex;
+	g_tempIndex[client] = index;
 	g_tempMaxSlots[client] = slots;
 	strcopy(g_tempSearch[client], MAX_LENGTH_CLASSNAME, search);
 
@@ -60,9 +59,9 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		static char slot[16];
 		IntToString(i, slot, sizeof(slot));
 		
-		if (g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[i] != 0)
+		if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
 		{
-			AddMenuItemFormat(menu, slot, _, "Slot %i\n  -> %s.", i, g_Sticker[eItems_GetStickerNumByDefIndex(g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[i])].m_displayName);
+			AddMenuItemFormat(menu, slot, _, "Slot %i\n  -> %s.", i, g_Sticker[eItems_GetStickerNumByDefIndex(g_PlayerWeapon[client][index].m_sticker[i])].m_displayName);
 		}
 		else
 		{
@@ -120,7 +119,7 @@ static void ShowWeaponStickerSlotMenu(int client, int slot)
 		return;
 	}
 
-	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	int weapon = eItems_GetActiveWeapon(client);
 	if (!eItems_IsValidWeapon(weapon))
 	{
 		CPrintToChat(client, "%t", "Invalid Stickers Weapon");
@@ -134,15 +133,18 @@ static void ShowWeaponStickerSlotMenu(int client, int slot)
 		return;
 	}
 
-	Menu menu = new Menu(MenuHandler_Menu_StickerSlot);
-
 	char weaponName[MAX_LENGTH_DISPLAY];
-	eItems_GetWeaponDisplayNameByWeaponNum(weaponIndex, weaponName, sizeof(weaponName));
+	if (!eItems_GetWeaponDisplayNameByWeaponNum(weaponIndex, weaponName, sizeof(weaponName)))
+	{
+		CPrintToChat(client, "%t", "Validate Error");
+		return;
+	}
 
-	if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[slot] != 0)
+	Menu menu = new Menu(MenuHandler_Menu_StickerSlot);
+	if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_sticker[slot] != 0)
 	{
 		char stickerName[MAX_LENGTH_DISPLAY];
-		eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[slot], stickerName, sizeof(stickerName));
+		eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[slot], stickerName, sizeof(stickerName));
 		menu.SetTitle("%T", "Menu Stickers Slot Already Title", client, weaponName, slot, stickerName);
 	}
 	else
@@ -177,37 +179,37 @@ public int MenuHandler_Menu_StickerSlot(Menu menu, MenuAction action, int client
 		char buffer[32];
 		menu.GetItem(param, buffer, sizeof(buffer));
 
-		int setIndex = StringToInt(buffer);
-		if (setIndex == -1)
+		int index = StringToInt(buffer);
+		if (index == -1)
 		{
 			if (g_tempSlot[client] == ALL_SLOTS)
 			{
 				for (int i = 0; i < g_tempMaxSlots[client]; i++)
 				{
-					g_PlayerWeapon[client][g_tempIndex[client]].m_stickerDefIndex[i] = 0;
-					UpdateClientStickers(client, g_tempIndex[client], i);
+					g_PlayerWeapon[client][g_tempIndex[client]].m_sticker[i] = 0;
+					UpdateClientData(client, g_tempIndex[client], i);
 				}
 			}
 			else
 			{
-				g_PlayerWeapon[client][g_tempIndex[client]].m_stickerDefIndex[g_tempSlot[client]] = 0;
-				UpdateClientStickers(client, g_tempIndex[client], g_tempSlot[client]);
+				g_PlayerWeapon[client][g_tempIndex[client]].m_sticker[g_tempSlot[client]] = 0;
+				UpdateClientData(client, g_tempIndex[client], g_tempSlot[client]);
 			}
 
 			g_isStickerRefresh[client] = true;
 			RefreshClientWeapon(client, g_tempIndex[client]);
 
 			// Announce.
-			char displayName[MAX_LENGTH_DISPLAY];
-			eItems_GetWeaponDisplayNameByWeaponNum(g_tempIndex[client], displayName, sizeof(displayName));
+			char weaponName[MAX_LENGTH_DISPLAY];
+			eItems_GetWeaponDisplayNameByWeaponNum(g_tempIndex[client], weaponName, sizeof(weaponName));
 
 			if (g_tempSlot[client] == ALL_SLOTS)
 			{
-				CPrintToChat(client, "%t", "Remove Sticker AllSlots", displayName);
+				CPrintToChat(client, "%t", "Remove Sticker AllSlots", weaponName);
 			}
 			else
 			{
-				CPrintToChat(client, "%t", "Remove Sticker", displayName, g_tempSlot[client]);
+				CPrintToChat(client, "%t", "Remove Sticker", weaponName, g_tempSlot[client]);
 			}
 
 			// Reopen menu.
@@ -216,7 +218,7 @@ public int MenuHandler_Menu_StickerSlot(Menu menu, MenuAction action, int client
 		}
 		else
 		{
-			ShowWeaponStickersSetMenu(client, g_tempSlot[client], setIndex);
+			ShowWeaponStickersSetMenu(client, g_tempSlot[client], index);
 		}
 	}
 	else if (action == MenuAction_Cancel)
@@ -242,13 +244,13 @@ static void ShowWeaponStickersSetMenu(int client, int slot, int stickerSet, cons
 		return;
 	}
 
-	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (!eItems_IsValidWeapon(weapon))
+	int weapon = eItems_GetActiveWeapon(client);
+	if (!IsValidEntity(weapon))
 	{
 		CPrintToChat(client, "%t", "Invalid Stickers Weapon");
 		return;
 	}
-
+	
 	int weaponIndex = eItems_GetWeaponNumByWeapon(weapon);
 	if (weaponIndex < 0 || weaponIndex != g_tempIndex[client])
 	{
@@ -262,20 +264,24 @@ static void ShowWeaponStickersSetMenu(int client, int slot, int stickerSet, cons
 		return;
 	}
 
+	char weaponName[MAX_LENGTH_DISPLAY];
+	if (!eItems_GetWeaponDisplayNameByWeaponNum(weaponIndex, weaponName, sizeof(weaponName)))
+	{
+		CPrintToChat(client, "%t", "Validate Error");
+		return;
+	}
+
 	Menu menu = new Menu(MenuHandler_Menu_StickerSet);
 	int count;
-
-	char weaponName[MAX_LENGTH_DISPLAY];
-	eItems_GetWeaponDisplayNameByWeaponNum(weaponIndex, weaponName, sizeof(weaponName));
 
 	// Add stickers to menu.
 	if (strlen(search) > 2)
 	{
-		if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[slot] != 0)
+		if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_sticker[slot] != 0)
 		{
-			char displayName[MAX_LENGTH_DISPLAY];
-			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[slot], displayName, sizeof(displayName));
-			menu.SetTitle("%T", "Menu Stickers Set Search Already Title", client, weaponName, slot, displayName, search);
+			char stickerName[MAX_LENGTH_DISPLAY];
+			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[slot], stickerName, sizeof(stickerName));
+			menu.SetTitle("%T", "Menu Stickers Set Search Already Title", client, weaponName, slot, stickerName, search);
 		}
 		else
 		{
@@ -291,21 +297,17 @@ static void ShowWeaponStickersSetMenu(int client, int slot, int stickerSet, cons
 
 			count++;
 
-			//PrintToChatAll("s=%s", g_Sticker[i].m_displayName);
-
 			static char index[16];
 			IntToString(i, index, sizeof(index));
 			menu.AddItem(index, g_Sticker[i].m_displayName);
 		}
-		
-		//PrintToChatAll("x=%i", count);
 	}
 	else
 	{
-		if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[slot] != 0)
+		if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_sticker[slot] != 0)
 		{
 			char stickerName[MAX_LENGTH_DISPLAY];
-			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_stickerDefIndex[slot], stickerName, sizeof(stickerName));
+			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[slot], stickerName, sizeof(stickerName));
 			menu.SetTitle("%T", "Menu Stickers Set Already Title", client, weaponName, slot, stickerName, g_StickerSet[stickerSet].m_displayName);
 		}
 		else
@@ -365,7 +367,6 @@ public int MenuHandler_Menu_StickerSet(Menu menu, MenuAction action, int client,
 			return;
 		}
 
-		// Reuse countdown.
 		int time = GetTime();
 		if (g_playerReuseTime[client] > time)
 		{
@@ -381,14 +382,14 @@ public int MenuHandler_Menu_StickerSet(Menu menu, MenuAction action, int client,
 		{
 			for (int i = 0; i < g_tempMaxSlots[client]; i++)
 			{
-				g_PlayerWeapon[client][g_tempIndex[client]].m_stickerDefIndex[i] = g_Sticker[stickerIndex].m_defIndex;
-				UpdateClientStickers(client, g_tempIndex[client], i);
+				g_PlayerWeapon[client][g_tempIndex[client]].m_sticker[i] = g_Sticker[stickerIndex].m_defIndex;
+				UpdateClientData(client, g_tempIndex[client], i);
 			}
 		}
 		else
 		{
-			g_PlayerWeapon[client][g_tempIndex[client]].m_stickerDefIndex[g_tempSlot[client]] = g_Sticker[stickerIndex].m_defIndex;
-			UpdateClientStickers(client, g_tempIndex[client], g_tempSlot[client]);
+			g_PlayerWeapon[client][g_tempIndex[client]].m_sticker[g_tempSlot[client]] = g_Sticker[stickerIndex].m_defIndex;
+			UpdateClientData(client, g_tempIndex[client], g_tempSlot[client]);
 		}
 
 		g_isStickerRefresh[client] = true;
