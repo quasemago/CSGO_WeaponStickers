@@ -23,6 +23,32 @@ stock bool AddMenuItemFormat(Menu menu, const char[] info, int style = ITEMDRAW_
 	return menu.AddItem(info, buffer, style);
 }
 
+stock bool ClientHasFlag(int client, const char[] flags)
+{
+	if (strlen(flags) == 0)
+	{
+		return true;
+	}
+
+	int iFlags = GetUserFlagBits(client);
+	if (iFlags & ADMFLAG_ROOT)
+	{
+		return true;
+	}
+
+	AdminFlag aFlags[24];
+	FlagBitsToArray(ReadFlagString(flags), aFlags, sizeof(aFlags));
+
+	for (int i = 0; i < sizeof(aFlags); i++)
+	{
+		if (iFlags & FlagToBit(aFlags[i]))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 stock bool ClientWeaponHasStickers(int client, int defIndex)
 {
 	int index = eItems_GetWeaponNumByDefIndex(defIndex);

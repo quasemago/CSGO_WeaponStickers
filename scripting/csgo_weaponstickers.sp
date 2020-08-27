@@ -74,6 +74,8 @@ public void OnPluginStart()
 	g_cvarEnabled = CreateConVar("sm_weaponstickers_enabled", "1", "Enable or disable Plugin.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_cvarUpdateViewModel = CreateConVar("sm_weaponstickers_updateviewmodel", "0", "Specifies whether the view model will be updated when changing stickers (P.S: the player will experience a small rollback).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_cvarReuseTime = CreateConVar("sm_weaponstickers_reusetime", "5", "Specifies how many seconds it will be necessary to wait to update the stickers again.", FCVAR_NOTIFY, true, 0.1);
+	g_cvarOverrideViewItem = CreateConVar("sm_weaponstickers_overrideview", "1", "Specifies whether the plugin will override the weapon view (p.s: Recommended if !ws plugin is used).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_cvarFlagUse = CreateConVar("sm_weaponstickers_flag", "", "Specifies the required flag (e.g: 'a' for reserved slot).", FCVAR_NOTIFY);
 
 	AutoExecConfig(true, "csgo_weaponstickers");
 	CSetPrefix("{green}[Weapon Stickers]{default}");
@@ -131,6 +133,11 @@ public void OnAllPluginsLoaded()
 /**
  * Forwards.
  */
+public void OnConfigsExecuted()
+{
+	g_cvarFlagUse.GetString(g_requiredFlag, sizeof(g_requiredFlag));
+}
+
 public void eItems_OnItemsSynced()
 {
 	g_stickerCount = eItems_GetStickersCount();
@@ -201,7 +208,7 @@ public void OnClientDisconnect(int client)
  */
 public Action OnGiveNamedItemPre(int client, char classname[64], CEconItemView &item, bool &ignoredCEconItemView, bool &isOriginNULL, float origin[3])
 {
-	if (!g_cvarEnabled.BoolValue)
+	if (!g_cvarEnabled.BoolValue || !g_cvarOverrideViewItem.BoolValue)
 	{
 		return Plugin_Continue;
 	}

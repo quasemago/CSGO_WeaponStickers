@@ -1,7 +1,7 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.0.9"
+#define PLUGIN_VERSION			"1.0.10"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
@@ -33,11 +33,14 @@ enum ServerPlatform
 }
 
 ServerPlatform g_ServerPlatform;
+char g_requiredFlag[20];
 
 /* ConVars */
 ConVar g_cvarEnabled = null;
 ConVar g_cvarUpdateViewModel = null;
 ConVar g_cvarReuseTime = null;
+ConVar g_cvarOverrideViewItem = null;
+ConVar g_cvarFlagUse = null;
 
 /* Stickers */
 enum struct StickerSet

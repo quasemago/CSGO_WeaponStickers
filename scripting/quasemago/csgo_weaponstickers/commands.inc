@@ -12,6 +12,12 @@ public Action Command_Stickers(int client, int args)
 		return Plugin_Handled;
 	}
 
+	if (strlen(g_requiredFlag) > 0 && !ClientHasFlag(client, g_requiredFlag))
+	{
+		CPrintToChat(client, "%t", "Need Access");
+		return Plugin_Handled;
+	}
+
 	if (args != 0)
 	{
 		char arg[MAX_LENGTH_CLASSNAME];

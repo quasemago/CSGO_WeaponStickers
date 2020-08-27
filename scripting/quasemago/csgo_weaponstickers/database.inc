@@ -21,6 +21,11 @@ void LoadClientData(int client)
 		return;
 	}
 
+	if (!ClientHasFlag(client, g_requiredFlag))
+	{
+		return;
+	}
+
 	char authId[MAX_LENGTH_AUTHID];
 	if (!GetClientAuthId(client, AuthId_Steam3, authId, sizeof(authId)))
 	{
