@@ -120,16 +120,6 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errMax)
 	return APLRes_Success;
 }
 
-public void OnAllPluginsLoaded()
-{
-	// Check for external ws plugins.
-	if ((FindConVar("sm_weapons_float_increment_size") != null)
-		|| (FindConVar("sm_weaponpaints_c4") != null))
-	{
-		g_hasExternalWs = true;
-	}
-}
-
 /**
  * Forwards.
  */
@@ -235,32 +225,6 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 		return;
 	}
 
-	// Check to avoid conflicts with external ws.
-	if (g_hasExternalWs)
-	{
-		DataPack data = new DataPack();
-		data.WriteCell(GetClientUserId(client));
-		data.WriteCell(EntIndexToEntRef(entity));
-		RequestFrame(Frame_NamedItemPost, data);
-	}
-	else
-	{
-		SetWeaponSticker(client, entity);
-	}
-}
-
-public void Frame_NamedItemPost(DataPack data)
-{
-	data.Reset();
-	int client = GetClientOfUserId(data.ReadCell());
-	int entity = EntRefToEntIndex(data.ReadCell());
-	delete data;
-
-	if (!client || entity == INVALID_ENT_REFERENCE)
-	{
-		return;
-	}
-
 	SetWeaponSticker(client, entity);
 }
 
@@ -305,8 +269,6 @@ void SetWeaponSticker(int client, int entity)
 
 						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_sticker[i], "sticker slot %i id", i);
 						SetAttributeValue(client, pEconItemView, view_as<int>(0.0), "sticker slot %i wear", i); // default wear.
-
-						// TODO: Add scale and rotation.
 					}
 				}
 

@@ -1,7 +1,7 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.0.10"
+#define PLUGIN_VERSION			"1.0.11"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
@@ -22,7 +22,6 @@
  * Variables.
  */
 bool g_isLateLoad = false;
-bool g_hasExternalWs = false;
 
 enum ServerPlatform
 {
@@ -69,6 +68,7 @@ Database g_Database = null;
 enum struct PlayerWeapon
 {
 	int m_sticker[MAX_STICKERS_SLOT];
+	// TODO: wear and rotation
 }
 
 PlayerWeapon g_PlayerWeapon[MAXPLAYERS + 1][MAX_WEAPONS];
