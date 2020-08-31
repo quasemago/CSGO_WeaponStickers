@@ -1,5 +1,5 @@
 # WeaponStickers
-Weapon Stickers for CS:GO
+Weapon Stickers for CS:GO: https://forums.alliedmods.net/showthread.php?t=327078
 
 ### Dependencies:
 - eItems: https://github.com/ESK0/eItems
