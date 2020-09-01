@@ -2,7 +2,7 @@
 Weapon Stickers for CS:GO, more details: https://forums.alliedmods.net/showthread.php?t=327078
 
 ## Dependencies:
-- eItems: https://github.com/ESK0/eItems
+- eItems: https://github.com/quasemago/eItems
 - PTaH: https://github.com/komashchenko/PTaH
 - Multi-Colors: https://github.com/Bara/Multi-Colors
 - SourceScramble [Windows Only]: https://github.com/nosoop/SMExt-SourceScramble
