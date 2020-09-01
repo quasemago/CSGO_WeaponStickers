@@ -6,7 +6,6 @@
 		"chi"		"[武器贴纸插件].\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
 		"pt"		"[Weapon Stickers].\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
 		"ru"		"[Weapon Stickers].\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
-
 	}
 	"Menu Stickers Slot Already Title"
 	{
@@ -136,7 +135,7 @@
 		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in the slot {lightgreen}{3}{default}."
 		"chi"		"你已把 贴纸 {orchid}{1}{default} 添加到 {green}{2}{default} 的 位置{lightgreen}{3}{default} 上。"
 		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} no slot {lightgreen}{3}{default}."
-		"ru"		"Вы добавили {orchid}{1}{default} наклейку на {green}{2}{default} в слот под номером {lightgreen}{3}{default}."
+		"ru"		"Вы наклеяли {orchid}{1}{default} на {green}{2}{default} в слот под номером {lightgreen}{3}{default}."
 	}
 	"Change Sticker AllSlots"
 	{
@@ -144,7 +143,7 @@
 		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in all slots."
 		"chi"		"你已把 贴纸 {orchid}{1}{default} 一键四连到 {green}{2}{default}。"
 		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} em todos os slots."
-		"ru"		"Вы добавили {orchid}{1}{default} наклейку на {green}{2}{default} во все слоты."
+		"ru"		"Вы наклеяли {orchid}{1}{default} на {green}{2}{default} во все слоты."
 	}
 	"Remove Sticker"
 	{
@@ -152,7 +151,7 @@
 		"en"		"You removed the sticker from slot {lightgreen}{2}{default} of the {green}{1}{default}."
 		"chi"		"你已把贴纸从 {lightgreen}{2}{default} 的 位置{green}{1}{default} 上 移除。"
 		"pt"		"Você removeu o sticker do slot {lightgreen}{2}{default} da {green}{1}{default}."
-		"кг"		"Вы удалили наклейк из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
+		"ru"		"Вы удалили наклейку из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
 	}
 	"Remove Sticker AllSlots"
 	{
