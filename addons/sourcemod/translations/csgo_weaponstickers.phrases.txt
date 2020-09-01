@@ -6,6 +6,7 @@
 		"chi"		"[武器贴纸插件].\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
 		"pt"		"[Weapon Stickers].\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
 		"ru"		"[Weapon Stickers].\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
+
 	}
 	"Menu Stickers Slot Already Title"
 	{
@@ -13,7 +14,7 @@
 		"en"		"Choose sticker for {1} [slot {2}].\nCurrent sticker: {3}\n \nSelect Set:"
 		"chi"		"正在为 {1} [位置 {2}]选择贴纸。\n当前贴纸： {3}\n \n请选择："
 		"pt"		"Escolher sticker para {1} [slot {2}].\nSticker atual: {3}\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\nТекущая наклейка: {3}\n \nВыбрать сет:"
+		"ru"		"Выбрана наклейка на {1} [слот {2}].\nТекущая наклейка: {3}\n \nВыбрать набор:"
 	}
 	"Menu Stickers Slot Title"
 	{
@@ -21,7 +22,7 @@
 		"en"		"Choose sticker for {1} [slot {2}].\n \nSelect Set:"
 		"chi"		"正在为 {1} [slot {2}]选择贴纸。\n \n请选择："
 		"pt"		"Escolher sticker para {1} [slot {2}].\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\n \nВыбрать сет:"
+		"ru"		"Выбрана наклейка на {1} [слот {2}].\n \nВыбрать набор:"
 	}
 	"Menu Stickers Slot Title AllSlots"
 	{
@@ -29,7 +30,7 @@
 		"en"		"Choose sticker for {1}.\n \nSelect Set:"
 		"chi"		"正在为 {1} 选择贴纸中。\n \n请选择："
 		"pt"		"Escolher sticker para {1}.\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1}.\n \nВыберите сет:"
+		"ru"		"Выбрана наклейка на {1}.\n \nВыберите набор:"
 	}
 	"Menu Stickers Slot Remove"
 	{
@@ -91,7 +92,7 @@
 		"en"		"No stickers found!"
 		"chi"		"贴纸未找到！"
 		"pt"		"Nenhum sticker encontrado!"
-		"ru"		"Никаких наклеек не найдено!"
+		"ru"		"Ничего не найдено!"
 	}
 	"Disabled Feature"
 	{
@@ -127,7 +128,7 @@
 		"en"		"You should wait {lightgreen}{1} {default}second(s) to change your weapon stickers again."
 		"chi"		"你需要再等待 {lightgreen}{1} {default}秒才能更换你的贴纸。"
 		"pt"		"Você deve esperar {lightgreen}{1} {default}segundo(s) para alterar novamente os stickers da sua arma."
-		"ru"		"Вы должны подождать {lightgreen}{1} {default}секунд(ы), чтобы снова поменять наклейку."
+		"ru"		"Вы должны подождать {lightgreen}{1} {default}секунд(ы), чтобы изменить наклейку."
 	}
 	"Change Sticker"
 	{
@@ -135,7 +136,7 @@
 		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in the slot {lightgreen}{3}{default}."
 		"chi"		"你已把 贴纸 {orchid}{1}{default} 添加到 {green}{2}{default} 的 位置{lightgreen}{3}{default} 上。"
 		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} no slot {lightgreen}{3}{default}."
-		"ru"		"Вы наклеяли {orchid}{1}{default} на {green}{2}{default} в слот под номером {lightgreen}{3}{default}."
+		"ru"		"Вы добавили {orchid}{1}{default} наклейку на {green}{2}{default} на слот {lightgreen}{3}{default}."
 	}
 	"Change Sticker AllSlots"
 	{
@@ -143,7 +144,7 @@
 		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in all slots."
 		"chi"		"你已把 贴纸 {orchid}{1}{default} 一键四连到 {green}{2}{default}。"
 		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} em todos os slots."
-		"ru"		"Вы наклеяли {orchid}{1}{default} на {green}{2}{default} во все слоты."
+		"ru"		"Вы добавили {orchid}{1}{default} наклейку на {green}{2}{default} на все слоты."
 	}
 	"Remove Sticker"
 	{
@@ -151,7 +152,7 @@
 		"en"		"You removed the sticker from slot {lightgreen}{2}{default} of the {green}{1}{default}."
 		"chi"		"你已把贴纸从 {lightgreen}{2}{default} 的 位置{green}{1}{default} 上 移除。"
 		"pt"		"Você removeu o sticker do slot {lightgreen}{2}{default} da {green}{1}{default}."
-		"ru"		"Вы удалили наклейку из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
+		"кг"		"Вы удалили наклейку из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
 	}
 	"Remove Sticker AllSlots"
 	{
@@ -159,7 +160,7 @@
 		"en"		"You have removed the sticker from all {green}{1}{default} slots"
 		"chi"		"你已把贴纸从 所有{green}{1}{default} 位置 上移除。"
 		"pt"		"Você removeu o sticker de todos os slots da {green}{1}{default}."
-		"ru"		"Вы удалили наклейку из всех {green}{1}{default} слотов"
+		"ru"		"Вы удалили наклейки из всех {green}{1}{default} слотов"
 	}
 	"Invalid Stickers Weapon"
 	{
