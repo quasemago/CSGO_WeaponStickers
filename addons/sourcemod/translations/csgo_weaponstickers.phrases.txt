@@ -151,7 +151,7 @@
 		"en"		"You removed the sticker from slot {lightgreen}{2}{default} of the {green}{1}{default}."
 		"chi"		"你已把贴纸从 {lightgreen}{2}{default} 的 位置{green}{1}{default} 上 移除。"
 		"pt"		"Você removeu o sticker do slot {lightgreen}{2}{default} da {green}{1}{default}."
-		"кг"		"Вы удалили наклейку из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
+		"ru"		"Вы удалили наклейку из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
 	}
 	"Remove Sticker AllSlots"
 	{
