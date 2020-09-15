@@ -3,7 +3,7 @@ Weapon Stickers for CS:GO, more details: https://forums.alliedmods.net/showthrea
 
 ## Dependencies:
 - eItems: https://github.com/quasemago/eItems/releases/latest
-- REST in Pawn: https://github.com/ErikMinekus/sm-ripext/releases/latest
+- REST in Pawn: https://github.com/ErikMinekus/sm-ripext/releases/tag/1.2.1
 - PTaH: https://github.com/komashchenko/PTaH
 - MultiColors: https://github.com/Bara/Multi-Colors
 - SourceScramble (Only for Windows Server): https://github.com/nosoop/SMExt-SourceScramble/releases/latest
