@@ -33,7 +33,7 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		return;
 	}
 
-	int slots = GetWeaponSupportedStickerSlots(weapon);
+	int slots = PTaH_GetEconItemViewFromEconEntity(weapon).GetItemDefinition().GetNumSupportedStickerSlots();
 	if (slots <= 0)
 	{
 		CPrintToChat(client, "%t", "Invalid Stickers Weapon");
