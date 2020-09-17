@@ -2,35 +2,35 @@
 {
 	"Menu Stickers Title"
 	{
-		"en"		"[Weapon Stickers].\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
-		"chi"		"[武器贴纸插件].\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
-		"pt"		"[Weapon Stickers].\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
-		"ru"		"[Weapon Stickers].\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
+		"en"		"[Weapon Stickers]\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
+		"chi"		"[武器贴纸插件]\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
+		"pt"		"[Weapon Stickers]\n- Digite !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
+		"ru"		"[Weapon Stickers]\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
 
 	}
 	"Menu Stickers Slot Already Title"
 	{
 		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1} [slot {2}].\nCurrent sticker: {3}\n \nSelect Set:"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸。\n当前贴纸： {3}\n \n请选择："
-		"pt"		"Escolher sticker para {1} [slot {2}].\nSticker atual: {3}\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\nТекущая наклейка: {3}\n \nВыбрать набор:"
+		"en"		"Choose sticker for {1} [slot {2}]\nCurrent sticker: {3}\n \nSelect Set:"
+		"chi"		"正在为 {1} [位置 {2}]选择贴纸\n当前贴纸： {3}\n \n请选择："
+		"pt"		"Escolher sticker para {1} [slot {2}]\nSticker atual: {3}\n \nSelecione o Set:"
+		"ru"		"Выбрана наклейка на {1} [слот {2}]\nТекущая наклейка: {3}\n \nВыбрать набор:"
 	}
 	"Menu Stickers Slot Title"
 	{
 		"#format"	"{1:s},{2:i}"
-		"en"		"Choose sticker for {1} [slot {2}].\n \nSelect Set:"
-		"chi"		"正在为 {1} [slot {2}]选择贴纸。\n \n请选择："
-		"pt"		"Escolher sticker para {1} [slot {2}].\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\n \nВыбрать набор:"
+		"en"		"Choose sticker for {1} [slot {2}]\n \nSelect Set:"
+		"chi"		"正在为 {1} [slot {2}]选择贴纸\n \n请选择："
+		"pt"		"Escolher sticker para {1} [slot {2}]\n \nSelecione o Set:"
+		"ru"		"Выбрана наклейка на {1} [слот {2}]\n \nВыбрать набор:"
 	}
 	"Menu Stickers Slot Title AllSlots"
 	{
 		"#format"	"{1:s},{2:i}"
-		"en"		"Choose sticker for {1}.\n \nSelect Set:"
-		"chi"		"正在为 {1} 选择贴纸中。\n \n请选择："
-		"pt"		"Escolher sticker para {1}.\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1}.\n \nВыберите набор:"
+		"en"		"Choose sticker for {1}\n \nSelect Set:"
+		"chi"		"正在为 {1} 选择贴纸中\n \n请选择："
+		"pt"		"Escolher sticker para {1}\n \nSelecione o Set:"
+		"ru"		"Выбрана наклейка на {1}\n \nВыберите набор:"
 	}
 	"Menu Stickers Slot Remove"
 	{
@@ -42,50 +42,50 @@
 	"Menu Stickers Set Already Title"
 	{
 		"#format"	"{1:s},{2:i},{3:s},{4:s}"
-		"en"		"Choose sticker for {1} [slot {2}].\nCurrent sticker: {3}\n \nViewing stickers '{4}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中。\n当前贴纸： {3}\n \n正在浏览的贴纸类别 '{4}':"
-		"pt"		"Escolher sticker para {1} [slot {2}].\nSticker atual: {3}\n \nVisualizando stickers '{4}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\nТекущая наклейка: {3}\n \nПросмотр наклеек '{4}':"
+		"en"		"Choose sticker for {1} [slot {2}]\nCurrent sticker: {3}\n \nViewing stickers '{4}':"
+		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n当前贴纸： {3}\n \n正在浏览的贴纸类别 '{4}':"
+		"pt"		"Escolher sticker para {1} [slot {2}]\nSticker atual: {3}\n \nVisualizando stickers '{4}':"
+		"ru"		"Выбрана наклейка на {1} [слот {2}]\nТекущая наклейка: {3}\n \nПросмотр наклеек '{4}':"
 	}
 	"Menu Stickers Set Title"
 	{
 		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1} [slot {2}].\n \nViewing stickers '{3}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中。\n \n正在浏览的贴纸 '{3}':"
-		"pt"		"Escolher sticker para {1} [slot {2}].\n \nVisualizando stickers '{3}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\n \nПросмотр наклеек '{3}':"
+		"en"		"Choose sticker for {1} [slot {2}]\n \nViewing stickers '{3}':"
+		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n \n正在浏览的贴纸 '{3}':"
+		"pt"		"Escolher sticker para {1} [slot {2}]\n \nVisualizando stickers '{3}':"
+		"ru"		"Выбрана наклейка на {1} [слот {2}]\n \nПросмотр наклеек '{3}':"
 	}
 	"Menu Stickers Set Title AllSlots"
 	{
 		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1}.\n \nViewing stickers '{3}':"
-		"chi"		"正在为 {1} 选择贴纸中。\n \n正在浏览的贴纸 '{3}':"
-		"pt"		"Escolher sticker para {1}.\n \nVisualizando stickers '{3}':"
-		"ru"		"Выбрана наклейка на {1}.\n \nПросмотр наклеек '{3}':"
+		"en"		"Choose sticker for {1}\n \nViewing stickers '{3}':"
+		"chi"		"正在为 {1} 选择贴纸中\n \n正在浏览的贴纸 '{3}':"
+		"pt"		"Escolher sticker para {1}\n \nVisualizando stickers '{3}':"
+		"ru"		"Выбрана наклейка на {1}\n \nПросмотр наклеек '{3}':"
 	}
 	"Menu Stickers Set Search Already Title"
 	{
 		"#format"	"{1:s},{2:i},{3:s},{4:s}"
-		"en"		"Choose sticker for {1} [slot {2}].\nCurrent sticker: {3}\n \nSearching sticker '{4}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中。\n当前贴纸： {3}\n \n正在搜索 '{4}':"
-		"pt"		"Escolher sticker para {1} [slot {2}].\nSticker atual: {3}\n \nPesquisando sticker '{4}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\nТекущая наклейка: {3}\n \nПросмотр наклеек '{4}':"
+		"en"		"Choose sticker for {1} [slot {2}]\nCurrent sticker: {3}\n \nSearching sticker '{4}':"
+		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n当前贴纸： {3}\n \n正在搜索 '{4}':"
+		"pt"		"Escolher sticker para {1} [slot {2}]\nSticker atual: {3}\n \nPesquisando sticker '{4}':"
+		"ru"		"Выбрана наклейка на {1} [слот {2}]\nТекущая наклейка: {3}\n \nПросмотр наклеек '{4}':"
 	}
 	"Menu Stickers Set Search Title"
 	{
 		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1} [slot {2}].\n \nSearching sticker '{3}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中。\n \n正在搜索 '{3}':"
-		"pt"		"Escolher sticker para {1} [slot {2}].\n \nPesquisando sticker '{3}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}].\n \nПросмотр наклеек '{3}':"
+		"en"		"Choose sticker for {1} [slot {2}]\n \nSearching sticker '{3}':"
+		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n \n正在搜索 '{3}':"
+		"pt"		"Escolher sticker para {1} [slot {2}]\n \nPesquisando sticker '{3}':"
+		"ru"		"Выбрана наклейка на {1} [слот {2}]\n \nПросмотр наклеек '{3}':"
 	}
 	"Menu Stickers Set Search Title AllSlots"
 	{
 		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1}.\n \nSearching sticker '{3}':"
-		"chi"		"正在为 {1} 选择贴纸中。\n \n正在搜索 '{3}':"
-		"pt"		"Escolher sticker para {1}.\n \nPesquisando sticker '{3}':"
-		"ru"		"Выбрана наклейка на {1}.\n \nПросмотр наклеек '{3}':"
+		"en"		"Choose sticker for {1}\n \nSearching sticker '{3}':"
+		"chi"		"正在为 {1} 选择贴纸中\n \n正在搜索 '{3}':"
+		"pt"		"Escolher sticker para {1}\n \nPesquisando sticker '{3}':"
+		"ru"		"Выбрана наклейка на {1}\n \nПросмотр наклеек '{3}':"
 	}
 	"Menu Stickers Slot Search None"
 	{
@@ -135,7 +135,7 @@
 		"#format"	"{1:s},{2:s},{3:i}"
 		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in the slot {lightgreen}{3}{default}."
 		"chi"		"你已把 贴纸 {orchid}{1}{default} 添加到 {green}{2}{default} 的 位置{lightgreen}{3}{default} 上。"
-		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} no slot {lightgreen}{3}{default}."
+		"pt"		"Você adicionou o sticker {orchid}{1} {default}para a {green}{2} {default}no slot {lightgreen}{3}{default}."
 		"ru"		"Вы добавили {orchid}{1}{default} наклейку на {green}{2}{default} на слот {lightgreen}{3}{default}."
 	}
 	"Change Sticker AllSlots"
