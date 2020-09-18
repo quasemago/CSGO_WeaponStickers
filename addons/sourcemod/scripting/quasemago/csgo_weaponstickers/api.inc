@@ -16,6 +16,7 @@ public int Native_SetWeaponSticker(Handle plugins, int numParams)
 	int weapon = GetNativeCell(2);
 	if (!IsValidEntity(weapon))
 	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid weapon entity [%i]", weapon);
 		return false;
 	}
 
@@ -39,7 +40,7 @@ public int Native_SetWeaponSticker(Handle plugins, int numParams)
 		defIndex = GetRandomSticker();
 	}
 
-	Address pEconItemView = pWeapon + view_as<Address>(g_EconItemOffset);
+	Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
 	SetAttributeValue(client, pEconItemView, defIndex, "sticker slot %i id", slot);
 	SetAttributeValue(client, pEconItemView, view_as<int>(GetNativeCell(5)), "sticker slot %i wear", slot);
 
