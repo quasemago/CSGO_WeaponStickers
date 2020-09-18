@@ -259,13 +259,13 @@ void SetWeaponSticker(int client, int entity)
 
 				Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
 			
-				bool updated = false;
+				bool isUpdated = false;
 				for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 				{
 					if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
 					{
 						// Sticker updated.
-						updated = true;
+						isUpdated = true;
 
 						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_sticker[i], "sticker slot %i id", i);
 						SetAttributeValue(client, pEconItemView, view_as<int>(0.0), "sticker slot %i wear", i); // default wear.
@@ -273,7 +273,7 @@ void SetWeaponSticker(int client, int entity)
 				}
 
 				// Update viewmodel if enabled.
-				if (updated && g_isStickerRefresh[client])
+				if (isUpdated && g_isStickerRefresh[client])
 				{
 					g_isStickerRefresh[client] = false;
 			
