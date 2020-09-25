@@ -81,11 +81,12 @@ stock int GetWeaponSupportedStickerSlots(int weapon)
 		return -1;
 	}
 
-	Address pItemDefition = SDKCall(g_SDKGetItemDefinition, pWeapon + view_as<Address>(g_econItemOffset));
+	Address pItemDefition = SDKCall(g_SDKGetItemDefinition, pWeapon + view_as<Address>(g_EconItemOffset));
 	if (pItemDefition == Address_Null)
 	{
 		return -1;
 	}
+
 	return SDKCall(g_SDKGetNumSupportedStickerSlots, pItemDefition);
 }
 
@@ -111,6 +112,7 @@ stock bool IsValidDefIndex(int defIndex)
 			return false;
 		}
 	}
+
 	return true;
 }
 
@@ -127,27 +129,26 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 	}
 
 	// Get item attribute list.
-	Address pAttributeList = pEconItemView + view_as<Address>(g_networkedDynamicAttributesOffset);
+	Address pAttributeList = pEconItemView + view_as<Address>(g_EconItemView_AttributeListOffset);
 
-	// Get attribute data.
-	int attrDefIndex = LoadFromAddress(pAttributeDef + view_as<Address>(0x8), NumberType_Int16);
-	int attrCount = LoadFromAddress(pAttributeList + view_as<Address>(g_attributeListCountOffset), NumberType_Int32);
-	Address pAttrData = DereferencePointer(pAttributeList + view_as<Address>(g_attributeListReadOffset));
+	// Get attributes data.
+	int attrDefIndex = LoadFromAddress(pAttributeDef + view_as<Address>(g_EconItemAttributeDefinition_iAttributeDefinitionIndexOffset), NumberType_Int16);
+	int attrCount = LoadFromAddress(pAttributeList + view_as<Address>(g_AttributeList_CountOffset), NumberType_Int32);
 
 	// Checks if the item already has the attribute, then update value.
 	int k = 0;
 	for (int i = 0; i < attrCount; i++)
 	{
-		Address pAttribute = pAttrData + view_as<Address>(k);
+		Address pAttribute = DereferencePointer(pAttributeList + view_as<Address>(g_AttributeList_ReadOffset)) + view_as<Address>(k);
 
-		int defIndex = LoadFromAddress(pAttribute + view_as<Address>(0x4), NumberType_Int16);
+		int defIndex = LoadFromAddress(pAttribute + view_as<Address>(g_Attributes_iAttributeDefinitionIndexOffset), NumberType_Int16);
 		if (defIndex == attrDefIndex)
 		{
 			// Checks if the value is different.
-			int value = LoadFromAddress(pAttribute + view_as<Address>(0x8), NumberType_Int32);
+			int value = LoadFromAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), NumberType_Int32);
 			if (value != attrValue)
 			{
-				StoreToAddress(pAttribute + view_as<Address>(0x8), attrValue, NumberType_Int32);
+				StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), attrValue, NumberType_Int32);
 				return true;
 			}
 			return false;
@@ -167,14 +168,14 @@ stock bool SetAttributeValue(int client, Address pEconItemView, int attrValue, c
 		if (IsValidAddress(pAttribute))
 		{
 			// Set attribute values.
-			StoreToAddress(pAttribute + view_as<Address>(0x4), attrDefIndex, NumberType_Int16);
-			StoreToAddress(pAttribute + view_as<Address>(0x8), attrValue, NumberType_Int32);
-			StoreToAddress(pAttribute + view_as<Address>(0xC), attrValue, NumberType_Int32);
-			StoreToAddress(pAttribute + view_as<Address>(0x10), 0, NumberType_Int32);
-			StoreToAddress(pAttribute + view_as<Address>(0x14), 0, NumberType_Int8);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iAttributeDefinitionIndexOffset), attrDefIndex, NumberType_Int16);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_iRawInitialValue32Offset), attrValue, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_nRefundableCurrencyOffset), 0, NumberType_Int32);
+			StoreToAddress(pAttribute + view_as<Address>(g_Attributes_bSetBonusOffset), 0, NumberType_Int8);
 
 			// Attach attribute in weapon.
-			SDKCall(g_SDKAddAttribute, pAttributeList, DereferencePointer(pEconItemView + view_as<Address>(0xAC)), pAttribute);
+			SDKCall(g_SDKAddAttribute, pAttributeList, DereferencePointer(pEconItemView + view_as<Address>(172)), pAttribute);
 
 			delete block; // Needed?
 			return true;
@@ -213,14 +214,9 @@ stock bool IsValidAddress(Address pAddress)
 stock int unsigned_compare(int a, int b)
 {
 	if (a == b)
-	{
 		return 0;
-	}
-
 	if ((a >>> 31) == (b >>> 31))
-	{
 		return ((a & 0x7FFFFFFF) > (b & 0x7FFFFFFF)) ? 1 : -1;
-	}
 	return ((a >>> 31) > (b >>> 31)) ? 1 : -1;
 }
 
@@ -229,9 +225,11 @@ stock int unsigned_compare(int a, int b)
 stock int Math_GetRandomInt(int min, int max)
 {
 	int random = GetURandomInt();
+
 	if (random == 0)
 	{
 		random++;
 	}
+
 	return RoundToCeil(float(random) / (float(SIZE_OF_INT) / float(max - min + 1))) + min - 1;
 }

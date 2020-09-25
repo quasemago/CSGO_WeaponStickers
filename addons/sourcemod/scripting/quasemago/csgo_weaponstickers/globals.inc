@@ -1,7 +1,7 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.0.13"
+#define PLUGIN_VERSION			"1.0.12"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
@@ -68,6 +68,7 @@ Database g_Database = null;
 enum struct PlayerWeapon
 {
 	int m_sticker[MAX_STICKERS_SLOT];
+	int m_wear[MAX_STICKERS_SLOT];
 	// TODO: wear and rotation
 }
 
@@ -87,7 +88,13 @@ Handle g_SDKGenerateAttribute = null;
 Handle g_SDKGetAttributeDefinitionByName = null;
 
 // Offsets
-int g_networkedDynamicAttributesOffset = -1;
-int g_attributeListReadOffset = -1;
-int g_attributeListCountOffset = -1;
-int g_econItemOffset = -1;
+int g_EconItemView_AttributeListOffset = -1;
+int g_EconItemAttributeDefinition_iAttributeDefinitionIndexOffset = -1;
+int g_Attributes_iAttributeDefinitionIndexOffset = -1;
+int g_Attributes_iRawValue32Offset = -1;
+int g_Attributes_iRawInitialValue32Offset = -1;
+int g_Attributes_nRefundableCurrencyOffset = -1;
+int g_Attributes_bSetBonusOffset = -1;
+int g_AttributeList_ReadOffset = -1;
+int g_AttributeList_CountOffset = -1;
+int g_EconItemOffset = -1;
