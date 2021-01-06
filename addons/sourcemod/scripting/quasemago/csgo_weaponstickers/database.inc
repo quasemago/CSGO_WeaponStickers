@@ -69,6 +69,38 @@ void UpdateClientData(int client, int index, int slot)
 	g_Database.Query(SQLCallback_UpdateClientData, query);
 }
 
+void UpdateWearData(int client, int index, int slot)
+{
+	if (!client || !IsClientInGame(client))
+	{
+		return;
+	}
+
+	char authId[MAX_LENGTH_AUTHID];
+	if (!GetClientAuthId(client, AuthId_Steam3, authId, sizeof(authId)))
+	{
+		LogError("[UpdateClientData] Auth failed for client index %d", client);
+		return;
+	}
+
+	int defIndex = eItems_GetWeaponDefIndexByWeaponNum(index);
+	if (!IsValidDefIndex(defIndex))
+	{
+		LogError("[UpdateClientData] Weapon failed for client index %d", client);
+		return;
+	}
+
+	// Update reuse time.
+	g_playerReuseTime[client] = GetTime() + g_cvarReuseTime.IntValue;
+
+	// Update MySQL.
+	char wear[2048];
+	//FormatEx(query, sizeof(query), "INSERT INTO %s (`steamid`, `weaponindex`, `slot%i`,`wear%i`) VALUES (\"%s\", '%i', '%i','%f') ON DUPLICATE KEY UPDATE slot%i = '%i' AND,wear%i = '%f'", MySQL_TABLE, slot, slot, authId, defIndex, g_PlayerWeapon[client][index].m_sticker[slot], g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_sticker[slot],slot,g_PlayerWeapon[client][index].m_wear[slot]);
+	FormatEx(wear, sizeof(wear), "INSERT INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE wear%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
+
+	g_Database.Query(SQLCallback_UpdateClientData,wear);
+}
+
 /**
  * Callbacks.
  */
@@ -116,6 +148,12 @@ public void SQLCallback_Connect(Database db, const char[] error, any data)
 			`slot3` int(11) NOT NULL DEFAULT '0', \
 			`slot4` int(11) NOT NULL DEFAULT '0', \
 			`slot5` int(11) NOT NULL DEFAULT '0', \
+			`wear0` float4 NOT NULL DEFAULT '0.000000', \
+			`wear1` float4 NOT NULL DEFAULT '0.000000', \
+			`wear2` float4 NOT NULL DEFAULT '0.000000', \
+			`wear3` float4 NOT NULL DEFAULT '0.000000', \
+			`wear4` float4 NOT NULL DEFAULT '0.000000', \
+			`wear5` float4 NOT NULL DEFAULT '0.000000', \
 			PRIMARY KEY (`id`), \
 			UNIQUE KEY (`steamid`, `weaponindex`) \
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", MySQL_TABLE);
@@ -163,6 +201,13 @@ public void SQLCallback_LoadClientData(Database db, DBResultSet results, const c
 							g_PlayerWeapon[client][weaponIndex].m_sticker[3] = results.FetchInt(6);
 							g_PlayerWeapon[client][weaponIndex].m_sticker[4] = results.FetchInt(7);
 							g_PlayerWeapon[client][weaponIndex].m_sticker[5] = results.FetchInt(8);
+							
+							g_PlayerWeapon[client][weaponIndex].m_wear[0] = results.FetchFloat(9);
+							g_PlayerWeapon[client][weaponIndex].m_wear[1] = results.FetchFloat(10);
+							g_PlayerWeapon[client][weaponIndex].m_wear[2] = results.FetchFloat(11);
+							g_PlayerWeapon[client][weaponIndex].m_wear[3] = results.FetchFloat(12);
+							g_PlayerWeapon[client][weaponIndex].m_wear[4] = results.FetchFloat(13);
+							g_PlayerWeapon[client][weaponIndex].m_wear[5] = results.FetchFloat(14);
 						}
 					}
 				}
