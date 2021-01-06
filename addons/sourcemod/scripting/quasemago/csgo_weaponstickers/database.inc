@@ -95,7 +95,6 @@ void UpdateWearData(int client, int index, int slot)
 
 	// Update MySQL.
 	char wear[2048];
-	//FormatEx(query, sizeof(query), "INSERT INTO %s (`steamid`, `weaponindex`, `slot%i`,`wear%i`) VALUES (\"%s\", '%i', '%i','%f') ON DUPLICATE KEY UPDATE slot%i = '%i' AND,wear%i = '%f'", MySQL_TABLE, slot, slot, authId, defIndex, g_PlayerWeapon[client][index].m_sticker[slot], g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_sticker[slot],slot,g_PlayerWeapon[client][index].m_wear[slot]);
 	FormatEx(wear, sizeof(wear), "INSERT INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE wear%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
 
 	g_Database.Query(SQLCallback_UpdateClientData,wear);
