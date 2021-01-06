@@ -173,6 +173,7 @@ static void ShowWeaponStickerSlotMenu(int client, int slot)
 		char stickerName[MAX_LENGTH_DISPLAY];
 		eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[slot], stickerName, sizeof(stickerName));
 		menu.SetTitle("%T", "Menu Stickers Slot Already Title", client, weaponName, slot, stickerName);
+		AddMenuItemFormat(menu, "-1", _, "%T", "Menu Stickers Slot Remove", client);
 		
 	for (int i = g_stickerSetsCount - 1; i >= 0; i--)
 	{
