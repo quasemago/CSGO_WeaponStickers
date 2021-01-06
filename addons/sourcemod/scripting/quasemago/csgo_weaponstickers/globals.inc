@@ -69,7 +69,7 @@ enum struct PlayerWeapon
 {
 	int m_sticker[MAX_STICKERS_SLOT];
 	float m_wear[MAX_STICKERS_SLOT];
-	// TODO: wear and rotation
+	// TODO: rotation
 }
 
 PlayerWeapon g_PlayerWeapon[MAXPLAYERS + 1][MAX_WEAPONS];
