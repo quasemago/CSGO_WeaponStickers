@@ -34,6 +34,7 @@
 
 #pragma semicolon 1
 #pragma newdecls required
+#pragma tabsize 0
 
 /**
  * Sub.
@@ -51,7 +52,7 @@
 public Plugin myinfo = 
 {
 	name = "[CS:GO] Weapon Stickers",
-	author = "quasemago",
+	author = "quasemago and donut1k",
 	description = "Stickers for Weapons",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/quasemago"
@@ -268,7 +269,7 @@ void SetWeaponSticker(int client, int entity)
 						isUpdated = true;
 
 						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_sticker[i], "sticker slot %i id", i);
-						SetAttributeValue(client, pEconItemView, view_as<int>(0.0), "sticker slot %i wear", i); // default wear.
+						SetAttributeValue(client, pEconItemView, view_as<int>(g_PlayerWeapon[client][index].m_wear[i]), "sticker slot %i wear", i); // default wear.
 					}
 				}
 
