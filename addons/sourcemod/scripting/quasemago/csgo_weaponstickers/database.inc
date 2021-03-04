@@ -69,6 +69,37 @@ void UpdateClientData(int client, int index, int slot)
 	g_Database.Query(SQLCallback_UpdateClientData, query);
 }
 
+void UpdateRotationData(int client, int index, int slot)
+{
+	if (!client || !IsClientInGame(client))
+	{
+		return;
+	}
+
+	char authId[MAX_LENGTH_AUTHID];
+	if (!GetClientAuthId(client, AuthId_Steam3, authId, sizeof(authId)))
+	{
+		LogError("[UpdateClientData] Auth failed for client index %d", client);
+		return;
+	}
+
+	int defIndex = eItems_GetWeaponDefIndexByWeaponNum(index);
+	if (!IsValidDefIndex(defIndex))
+	{
+		LogError("[UpdateClientData] Weapon failed for client index %d", client);
+		return;
+	}
+
+	// Update reuse time.
+	g_playerReuseTime[client] = GetTime() + g_cvarReuseTime.IntValue;
+
+	// Update MySQL.
+	char rotation[2048];
+	FormatEx(rotation, sizeof(rotation), "INSERT INTO %s (`steamid`, `weaponindex`, `rotation%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE rotation%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_rotation[slot], slot, g_PlayerWeapon[client][index].m_rotation[slot]);
+
+	g_Database.Query(SQLCallback_UpdateClientData,rotation);
+}
+
 void UpdateWearData(int client, int index, int slot)
 {
 	if (!client || !IsClientInGame(client))
@@ -153,6 +184,12 @@ public void SQLCallback_Connect(Database db, const char[] error, any data)
 			`wear3` float4 NOT NULL DEFAULT '0.000000', \
 			`wear4` float4 NOT NULL DEFAULT '0.000000', \
 			`wear5` float4 NOT NULL DEFAULT '0.000000', \
+			`rotation0` float4 NOT NULL DEFAULT '0.000', \
+			`rotation1` float4 NOT NULL DEFAULT '0.000', \
+			`rotation2` float4 NOT NULL DEFAULT '0.000', \
+			`rotation3` float4 NOT NULL DEFAULT '0.000', \
+			`rotation4` float4 NOT NULL DEFAULT '0.000', \
+			`rotation5` float4 NOT NULL DEFAULT '0.000', \
 			PRIMARY KEY (`id`), \
 			UNIQUE KEY (`steamid`, `weaponindex`) \
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", MySQL_TABLE);
@@ -207,6 +244,13 @@ public void SQLCallback_LoadClientData(Database db, DBResultSet results, const c
 							g_PlayerWeapon[client][weaponIndex].m_wear[3] = results.FetchFloat(12);
 							g_PlayerWeapon[client][weaponIndex].m_wear[4] = results.FetchFloat(13);
 							g_PlayerWeapon[client][weaponIndex].m_wear[5] = results.FetchFloat(14);
+							
+							g_PlayerWeapon[client][weaponIndex].m_rotation[0] = results.FetchFloat(15);
+							g_PlayerWeapon[client][weaponIndex].m_rotation[1] = results.FetchFloat(16);
+							g_PlayerWeapon[client][weaponIndex].m_rotation[2] = results.FetchFloat(17);
+							g_PlayerWeapon[client][weaponIndex].m_rotation[3] = results.FetchFloat(18);
+							g_PlayerWeapon[client][weaponIndex].m_rotation[4] = results.FetchFloat(19);
+							g_PlayerWeapon[client][weaponIndex].m_rotation[5] = results.FetchFloat(20);
 						}
 					}
 				}
