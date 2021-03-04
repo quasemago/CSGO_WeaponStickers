@@ -333,9 +333,9 @@
 	}
 	"Rotation Updated"
 	{
-		"en"		"Wear Updated"
-		"chi"		"武器印花的磨损已更新"
-		"pt"		"Desgaste atualizado"
+		"en"		"Rotate Updated"
+		"chi"		"旋转更新"
+		"pt"		"Rotação atualizado"
 		"ru"		"Поворот обновлен"
 	}
 }
