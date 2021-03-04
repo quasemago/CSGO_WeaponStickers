@@ -79,7 +79,7 @@ public void OnPluginStart()
 	g_cvarFlagUse = CreateConVar("sm_weaponstickers_flag", "", "Specifies the required flag (e.g: 'a' for reserved slot).", FCVAR_NOTIFY);
 
 	AutoExecConfig(true, "csgo_weaponstickers");
-	CSetPrefix("{green}[Наклейки на оружие]{default}");
+	CSetPrefix("{green}[Weapon Stickers]{default}");
 
 	// Forward event to modules.
 	LoadSDK();
