@@ -6,6 +6,7 @@ static char g_tempSearch[MAXPLAYERS +1][MAX_LENGTH_CLASSNAME];
 
 #define ALL_SLOTS 99
 #define WEAR 101
+#define ROTATION 103
 
 void MenusClientDisconnect(int client)
 {
@@ -62,17 +63,18 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		
 		if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
 		{
-			AddMenuItemFormat(menu, slot, _, "Slot %i\n  -> %s.", i, g_Sticker[eItems_GetStickerNumByDefIndex(g_PlayerWeapon[client][index].m_sticker[i])].m_displayName);
+			AddMenuItemFormat(menu, slot, _, "Слoт %i\n  -> %s.", i, g_Sticker[eItems_GetStickerNumByDefIndex(g_PlayerWeapon[client][index].m_sticker[i])].m_displayName);
 		}
 		else
 		{
-			AddMenuItemFormat(menu, slot, _, "Slot %i\n  -> %T.", i, "None Sticker", client);
+			AddMenuItemFormat(menu, slot, _, "Слoт %i\n  -> %T.", i, "None Sticker", client);
 		}
 	}
 
 	//menu.AddItem("x", "", ITEMDRAW_SPACER);
 	AddMenuItemFormat(menu, "99", _, "%T.", "All Slots", client);
 	AddMenuItemFormat(menu, "101", _, "%T.", "Set Wear", client);
+	AddMenuItemFormat(menu, "103", _, "%T.", "Set Rotation", client);
 	
 	menu.ExitButton = true;
 	menu.Display(client, MENU_TIME_FOREVER);
@@ -144,7 +146,21 @@ static void ShowWeaponStickerSlotMenu(int client, int slot)
 
 	Menu menu = new Menu(MenuHandler_Menu_StickerSlot);
 	
-	if (slot == WEAR) 
+	if (slot == ROTATION) 
+	{
+		menu.SetTitle("%T", "Stickers Rotation", client, weaponName, slot);
+		for (int i = 0; i <= GetWeaponSupportedStickerSlots(eItems_GetActiveWeapon(client)) - 1; i++)
+		{
+			static char index[16];
+			IntToString(i, index, sizeof(index));
+			char buffer[254];
+			Format(buffer, sizeof(buffer), "%i",i);
+			char stickerName[MAX_LENGTH_DISPLAY];
+			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[i], stickerName, sizeof(stickerName));
+			AddMenuItemFormat(menu, buffer, _, "Cлoт %i Нaклeйкa( %s ) \n -> Тeкущий поворот : %f°", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_rotation[i]);
+		}
+	
+	} else	if (slot == WEAR) 
 	{
 		menu.SetTitle("%T", "Stickers Wear", client, weaponName, slot);
 		for (int i = 0; i <= GetWeaponSupportedStickerSlots(eItems_GetActiveWeapon(client)) - 1; i++)
@@ -155,7 +171,7 @@ static void ShowWeaponStickerSlotMenu(int client, int slot)
 			Format(buffer, sizeof(buffer), "%i",i);
 			char stickerName[MAX_LENGTH_DISPLAY];
 			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[i], stickerName, sizeof(stickerName));
-			AddMenuItemFormat(menu, buffer, _, "Slot %i Sticker( %s ) \n -> Value : %f", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_wear[i]);
+			AddMenuItemFormat(menu, buffer, _, "Cлoт %i Нaклeйкa( %s ) \n -> Тeкущий изнoc : %f", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_wear[i]);
 		}
 	
 	} else if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_sticker[slot] != 0)
@@ -306,7 +322,20 @@ static void ShowWeaponStickersSetMenu(int client, int slot, int stickerSet, cons
 	Menu menu = new Menu(MenuHandler_Menu_StickerSet);
 	int count;
 	
-    if (slot == WEAR) 
+	if (slot == ROTATION) 
+	{
+	    menu.SetTitle("%T","Set Rotation Title",client, stickerSet, g_PlayerWeapon[client][weaponIndex].m_rotation[stickerSet]);
+	    AddMenuItemFormat(menu, packageID(stickerSet,0), _ , "%T", "Reset Rotation", client);
+	    AddMenuItemFormat(menu, packageID(stickerSet,1), _ , "%T", "Right Rotation15", client);
+	    AddMenuItemFormat(menu, packageID(stickerSet,2), _ , "%T", "Left Rotation15", client);
+        AddMenuItemFormat(menu, packageID(stickerSet,3), _ , "%T", "Right Rotation30", client);
+	    AddMenuItemFormat(menu, packageID(stickerSet,4), _ , "%T", "Left Rotation30", client);	
+        AddMenuItemFormat(menu, packageID(stickerSet,5), _ , "%T", "Right Rotation45", client);
+	    AddMenuItemFormat(menu, packageID(stickerSet,6), _ , "%T", "Left Rotation45", client);	
+        AddMenuItemFormat(menu, packageID(stickerSet,7), _ , "%T", "Right Rotation60", client);
+	    AddMenuItemFormat(menu, packageID(stickerSet,8), _ , "%T", "Left Rotation60", client);		
+	}
+	else if (slot == WEAR) 
 	{
 	    menu.SetTitle("%T","Set Wear Title",client, stickerSet, g_PlayerWeapon[client][weaponIndex].m_wear[stickerSet]);
 	    AddMenuItemFormat(menu, packageID(stickerSet,0), _ , "%T", "Reset Wear", client);
@@ -432,7 +461,30 @@ public int MenuHandler_Menu_StickerSet(Menu menu, MenuAction action, int client,
 			ShowWeaponStickersSetMenu(client, g_tempSlot[client], stickerSet, g_tempSearch[client]);
 			return;
 		}
-		if (g_tempSlot[client] == WEAR) {
+		if (g_tempSlot[client] == ROTATION) {
+			int stickerID = (stickerIndex / 1000) - 1;
+			int work = stickerIndex % 1000; 
+			//PrintToServer("Value : %i ,stickerID : %i , Work : %i",stickerIndex,stickerID,work);
+			float f = g_PlayerWeapon[client][g_tempIndex[client]].m_rotation[stickerID];
+			switch (work) {
+			case 1: {f += 15.0;}
+			case 2: {f-= 15.0;}
+			case 3: {f += 30.0;}
+			case 4: {f-= 30.0;}
+			case 5: {f += 45.0;}
+			case 6: {f-= 45.0;}
+			case 7: {f += 60.0;}
+			case 8: {f-= 60.0;}
+			case 0: {f = 0.0;}
+			default:{}
+			}
+			if (f > 360.0) f = 360.0;
+			if (f < -360) f = -360.0;
+			
+			g_PlayerWeapon[client][g_tempIndex[client]].m_rotation[stickerID] = f;
+			UpdateRotationData(client, g_tempIndex[client], stickerID);
+			
+		} else	if (g_tempSlot[client] == WEAR) {
 			int stickerID = (stickerIndex / 1000) - 1;
 			int work = stickerIndex % 1000; 
 			//PrintToServer("Value : %i ,stickerID : %i , Work : %i",stickerIndex,stickerID,work);
@@ -474,6 +526,10 @@ public int MenuHandler_Menu_StickerSet(Menu menu, MenuAction action, int client,
 		{
 			CPrintToChat(client, "%t", "Change Sticker AllSlots", g_Sticker[stickerIndex].m_displayName, weaponName);
 		}
+		else if (g_tempSlot[client] == ROTATION) 
+		{
+		    CPrintToChat(client,"%t","Rotation Updated");
+		} 
 		else if (g_tempSlot[client] == WEAR) 
 		{
 		    CPrintToChat(client,"%t","Wear Updated");
@@ -484,7 +540,12 @@ public int MenuHandler_Menu_StickerSet(Menu menu, MenuAction action, int client,
 		}
 
 		// Reopen menu.
-		if (g_tempSlot[client] == WEAR) 
+		if (g_tempSlot[client] == ROTATION) 
+		{
+			g_menuSite[client] = GetMenuSelectionPosition();
+			ShowWeaponStickersSetMenu(client, g_tempSlot[client], (stickerIndex / 1000) - 1, g_tempSearch[client]);
+		} 
+		else if (g_tempSlot[client] == WEAR) 
 		{
 			g_menuSite[client] = GetMenuSelectionPosition();
 			ShowWeaponStickersSetMenu(client, g_tempSlot[client], (stickerIndex / 1000) - 1, g_tempSearch[client]);
