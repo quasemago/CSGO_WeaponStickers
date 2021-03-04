@@ -79,7 +79,7 @@ public void OnPluginStart()
 	g_cvarFlagUse = CreateConVar("sm_weaponstickers_flag", "", "Specifies the required flag (e.g: 'a' for reserved slot).", FCVAR_NOTIFY);
 
 	AutoExecConfig(true, "csgo_weaponstickers");
-	CSetPrefix("{green}[Weapon Stickers]{default}");
+	CSetPrefix("{green}[Наклейки на оружие]{default}");
 
 	// Forward event to modules.
 	LoadSDK();
@@ -270,6 +270,7 @@ void SetWeaponSticker(int client, int entity)
 
 						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_sticker[i], "sticker slot %i id", i);
 						SetAttributeValue(client, pEconItemView, view_as<int>(g_PlayerWeapon[client][index].m_wear[i]), "sticker slot %i wear", i); // default wear.
+						SetAttributeValue(client, pEconItemView, view_as<int>(g_PlayerWeapon[client][index].m_rotation[i]), "sticker slot %i rotation", i); // default rotation.
 					}
 				}
 
