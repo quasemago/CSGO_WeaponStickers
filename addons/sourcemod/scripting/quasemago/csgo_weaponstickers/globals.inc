@@ -1,13 +1,13 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.0.16"
+#define PLUGIN_VERSION			"1.0.17"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
 
 #define MAX_WEAPONS				128
-#define MAX_STICKERS			4460
+#define MAX_STICKERS			4505
 #define MAX_STICKERS_SETS		24
 #define MAX_STICKERS_SLOT		6
 
