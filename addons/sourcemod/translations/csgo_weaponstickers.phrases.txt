@@ -263,9 +263,9 @@
 	"Set Rotation Title"
 	{
 		"#format"	"{1:i},{2:f}"
-		"en"		"Select Slot # {1} Wear \n Current Wear : {2}"
-		"chi"       "设置# {1} 位置印花的磨损 \n 当前磨损 : {2}"
-		"pt"		"Selecione Slot # {1} Vestir \n Desgaste Atual : {2}"
+		"en"		"Select Slot # {1} to rotate the sticker \n Current Rotation : {2}"
+		"chi"       "设置# {1} 旋转贴纸 \n 当前转 : {2}"
+		"pt"		"Slot selecionado # {1} para rotar etiquetas \n Rotação atual : {2}"
 		"ru"		"Выбран слот # {1} для поворота наклейки \n Текущее поворот : {2}°"
 	}
 	"Reset Rotation"
@@ -333,9 +333,9 @@
 	}
 	"Rotation Updated"
 	{
-		"en"		"Rotate Updated"
+		"en"		"Rotation Updated"
 		"chi"		"旋转更新"
-		"pt"		"Rotação atualizado"
+		"pt"		"Rotação do atualizador"
 		"ru"		"Поворот обновлен"
 	}
 }
