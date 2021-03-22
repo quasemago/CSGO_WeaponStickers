@@ -4,7 +4,7 @@
 	{
 		"en"		"[Weapon Stickers]\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
 		"chi"		"[武器贴纸插件]\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
-		"pt"		"[Weapon Stickers]\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
+		"pt"		"[Weapon Stickers]\n- Digite !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
 		"ru"		"[Наклейки на оружия]\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
 	}
 	"Menu Stickers Slot Already Title"
