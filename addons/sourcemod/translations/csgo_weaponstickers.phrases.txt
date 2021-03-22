@@ -2,10 +2,10 @@
 {
 	"Menu Stickers Title"
 	{
-		"en"		"[Weapon Stickers].\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
-		"chi"		"[武器贴纸插件].\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
-		"pt"		"[Weapon Stickers].\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
-		"ru"		"[Наклейки на оружия].\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
+		"en"		"[Weapon Stickers]\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
+		"chi"		"[武器贴纸插件]\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
+		"pt"		"[Weapon Stickers]\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
+		"ru"		"[Наклейки на оружия]\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
 	}
 	"Menu Stickers Slot Already Title"
 	{
@@ -207,7 +207,7 @@
 	{
 		"en"		"Stickers Wear"
 		"chi"		"印花磨损设置菜单"
-		"pt"		"Vestir adesivos"
+		"pt"		"Desgate Stikcers"
 		"ru"		"Качество наклеек"
 	}
 	"Set Wear Title"
@@ -215,7 +215,7 @@
 		"#format"	"{1:i},{2:f}"
 		"en"		"Select Slot # {1} Wear \n Current Wear : {2}"
 		"chi"       "设置# {1} 位置印花的磨损 \n 当前磨损 : {2}"
-		"pt"		"Selecione Slot # {1} Vestir \n Desgaste Atual : {2}"
+		"pt"		"Selecione Slot # {1} Desgaste \n Desgaste Atual : {2}"
 		"ru"		"Выбран слот # {1} для качества наклейки \n Текущее качество : {2}"
 	}
 	"Reset Wear"
@@ -236,7 +236,7 @@
 	{
 		"en"		"Del Wear"
 		"chi"		"减少印花磨损"
-		"pt"		"Del Wear"
+		"pt"		"Remover desgaste"
 		"ru"		"Уменьшить износ"
 	}
 	"Wear Updated"
@@ -248,16 +248,16 @@
 	}
 	"Set Rotation"
 	{
-		"en"		"Set Wear"
+		"en"		"Set Rotation"
 		"chi"	    "设置印花磨损"
-		"pt"		"Definir desgaste"
+		"pt"		"Definir rotação"
 		"ru"		"Изменить поворот наклеек"
 	}
 	"Stickers Rotation"
 	{
-		"en"		"Stickers Wear"
+		"en"		"Stickers Rotation"
 		"chi"		"印花磨损设置菜单"
-		"pt"		"Vestir adesivos"
+		"pt"		"Rotação Stickers"
 		"ru"		"Поворот наклеек"
 	}
 	"Set Rotation Title"
@@ -265,77 +265,77 @@
 		"#format"	"{1:i},{2:f}"
 		"en"		"Select Slot # {1} to rotate the sticker \n Current Rotation : {2}"
 		"chi"       "设置# {1} 旋转贴纸 \n 当前转 : {2}"
-		"pt"		"Slot selecionado # {1} para rotar etiquetas \n Rotação atual : {2}"
+		"pt"		"Slot selecionado # {1} para rotacionar stickers \n Rotação atual : {2}"
 		"ru"		"Выбран слот # {1} для поворота наклейки \n Текущее поворот : {2}°"
 	}
 	"Reset Rotation"
 	{
 		"en"		"Return to original position"
 		"chi"		"返回原始位置"
-		"pt"		"Volver a la posición inicial"
+		"pt"		"Retornar à posição original"
 		"ru"		"Вернуть в исходное положение"
 	}
 	"Right Rotation15"
 	{
 		"en"		"Right by 15°"
 		"chi"		"向右走15"
-		"pt"		"A la derecha en 15°"
+		"pt"		"Direita a 15°"
 		"ru"		"Повернуть вправо на 15°"
 	}
 	"Left Rotation15"
 	{
 		"en"		"Left by 15°"
 		"chi"		"向左走15°"
-		"pt"		"Izquierda en 15°"
+		"pt"		"Esquerda a 15°"
 		"ru"		"Повернуть влево на 15°"
 	}
 	"Right Rotation30"
 	{
 		"en"		"Right by 30°"
 		"chi"		"向右走30°"
-		"pt"		"A la derecha en 30°"
+		"pt"		"Direita a 30°"
 		"ru"		"Повернуть вправо на 30°"
 	}
 	"Left Rotation30"
 	{
 		"en"		"Left by 30°"
 		"chi"		"向左走30°"
-		"pt"		"Izquierda en"
+		"pt"		"Esquerda a 30º"
 		"ru"		"Повернуть влево на 30°"
 	}
 	"Right Rotation45"
 	{
 		"en"		"Right by 45°"
 		"chi"		"向右走45°"
-		"pt"		"A la derecha en 45°°"
+		"pt"		"Direita a 45°"
 		"ru"		"Повернуть вправо на 45°"
 	}
 	"Left Rotation45"
 	{
 		"en"		"Left by 45°"
 		"chi"		"向左走45°"
-		"pt"		"Izquierda en 45°"
+		"pt"		"Esquerda a 45°"
 		"ru"		"Повернуть влево на 45°"
 	}
 	"Right Rotation60"
 	{
 		"en"		"Right by 60°"
 		"chi"		"向右走60°"
-		"pt"		"A la derecha en 60°"
+		"pt"		"Direita a 60°"
 		"ru"		"Повернуть вправо на 60°"
 	}
 	"Left Rotation60"
 	{
 		"en"		"Left by 60°"
 		"chi"		"向左走60°"
-		"pt"		"Izquierda en 60°"
+		"pt"		"Esquerda a 60°"
 		"ru"		"Повернуть влево на 60°"
 	}
 	"Rotation Updated"
 	{
 		"en"		"Rotation Updated"
 		"chi"		"旋转更新"
-		"pt"		"Rotação do atualizador"
+		"pt"		"Rotação atualizada"
 		"ru"		"Поворот обновлен"
 	}
 }
