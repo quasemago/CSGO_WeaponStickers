@@ -156,6 +156,7 @@ void UpdateWearData(int client, int index, int slot)
 	if(g_bMySQL)
 	{
 		FormatEx(wear, sizeof(wear), "INSERT INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE wear%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
+		g_Database.Query(SQLCallback_UpdateClientData,wear);
 	}
 	else
 	{
@@ -165,7 +166,6 @@ void UpdateWearData(int client, int index, int slot)
 		FormatEx(wear, sizeof(wear), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
 		g_Database.Query(SQLCallback_UpdateClientData, wear);
 	}	
-	g_Database.Query(SQLCallback_UpdateClientData,wear);
 }
 
 /**
