@@ -22,7 +22,7 @@
  * Variables.
  */
 bool g_isLateLoad = false;
-
+bool g_bMySQL = false;
 enum ServerPlatform
 {
 	OS_Unknown = 0,
