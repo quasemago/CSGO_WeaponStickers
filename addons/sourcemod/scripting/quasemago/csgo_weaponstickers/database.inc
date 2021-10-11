@@ -7,11 +7,14 @@ void LoadDatabase()
 
 	if (g_Database != null)
 	{
-		LogMessage("(WeaponStickers) Database is already connected! (Handle: %d)", g_Database);
+		LogMessage("(WeaponStickers) Database is already connected! (Handle: %d) Databse Type:%s", g_Database,g_bMySQL ? "MySQL":"SQLite");
 		return;
 	}
 
-	Database.Connect(SQLCallback_Connect, MySQL_DATABASE);
+	if(SQL_CheckConfig(MySQL_DATABASE))
+	{
+		Database.Connect(SQLCallback_Connect, MySQL_DATABASE);
+	}else Database.Connect(SQLCallback_Connect, "storage-local");
 }
 
 void LoadClientData(int client)
@@ -34,6 +37,7 @@ void LoadClientData(int client)
 	}
 
 	char query[512];
+
 	FormatEx(query, sizeof(query), "SELECT * FROM %s WHERE steamid = \"%s\";", MySQL_TABLE, authId);
 	g_Database.Query(SQLCallback_LoadClientData, query, GetClientUserId(client));
 }
@@ -64,9 +68,21 @@ void UpdateClientData(int client, int index, int slot)
 
 	// Update MySQL.
 	char query[2048];
-	FormatEx(query, sizeof(query), "INSERT INTO %s (`steamid`, `weaponindex`, `slot%i`) VALUES (\"%s\", '%i', '%i') ON DUPLICATE KEY UPDATE slot%i = '%i';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_sticker[slot], slot, g_PlayerWeapon[client][index].m_sticker[slot]);
 
-	g_Database.Query(SQLCallback_UpdateClientData, query);
+	if(g_bMySQL)
+	{
+		FormatEx(query, sizeof(query), "INSERT INTO %s (`steamid`, `weaponindex`, `slot%i`) VALUES (\"%s\", '%i', '%i') ON DUPLICATE KEY UPDATE slot%i = '%i';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_sticker[slot], slot, g_PlayerWeapon[client][index].m_sticker[slot]);
+		g_Database.Query(SQLCallback_UpdateClientData, query);
+	}
+	else 
+	{
+		FormatEx(query, sizeof(query), "UPDATE %s SET `slot%i`='%i',`weaponindex`='%i' WHERE `steamid`=\"%s\";", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_sticker[slot],defIndex,authId);
+		g_Database.Query(SQLCallback_UpdateClientData, query);
+
+		FormatEx(query, sizeof(query), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `slot%i`) VALUES (\"%s\", '%i', '%i');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_sticker[slot], slot, g_PlayerWeapon[client][index].m_sticker[slot]);
+		g_Database.Query(SQLCallback_UpdateClientData, query);
+	}
+	
 }
 
 void UpdateRotationData(int client, int index, int slot)
@@ -95,9 +111,20 @@ void UpdateRotationData(int client, int index, int slot)
 
 	// Update MySQL.
 	char rotation[2048];
-	FormatEx(rotation, sizeof(rotation), "INSERT INTO %s (`steamid`, `weaponindex`, `rotation%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE rotation%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_rotation[slot], slot, g_PlayerWeapon[client][index].m_rotation[slot]);
+	if(g_bMySQL)
+	{
+		FormatEx(rotation, sizeof(rotation), "INSERT INTO %s (`steamid`, `weaponindex`, `rotation%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE rotation%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_rotation[slot], slot, g_PlayerWeapon[client][index].m_rotation[slot]);
+		g_Database.Query(SQLCallback_UpdateClientData,rotation);
+	}
+	else 
+	{
+		FormatEx(rotation, sizeof(rotation), "UPDATE %s SET `rotation%i`='%f',`weaponindex`='%d' WHERE `steamid`=\"%s\";", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_rotation[slot],defIndex,authId);
+		g_Database.Query(SQLCallback_UpdateClientData, rotation);
 
-	g_Database.Query(SQLCallback_UpdateClientData,rotation);
+		FormatEx(rotation, sizeof(rotation), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `rotation%i`) VALUES (\"%s\", '%i', '%f');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_rotation[slot], slot, g_PlayerWeapon[client][index].m_rotation[slot]);
+		g_Database.Query(SQLCallback_UpdateClientData, rotation);
+	}
+	
 }
 
 void UpdateWearData(int client, int index, int slot)
@@ -126,8 +153,18 @@ void UpdateWearData(int client, int index, int slot)
 
 	// Update MySQL.
 	char wear[2048];
-	FormatEx(wear, sizeof(wear), "INSERT INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE wear%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
+	if(g_bMySQL)
+	{
+		FormatEx(wear, sizeof(wear), "INSERT INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f') ON DUPLICATE KEY UPDATE wear%i = '%f';", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
+	}
+	else
+	{
+		FormatEx(wear, sizeof(wear), "UPDATE %s SET `wear%i`='%f',`weaponindex`='%d' WHERE `steamid`=\"%s\";", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_wear[slot],defIndex,authId);
+		g_Database.Query(SQLCallback_UpdateClientData, wear);
 
+		FormatEx(wear, sizeof(wear), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `wear%i`) VALUES (\"%s\", '%i', '%f');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot]);
+		g_Database.Query(SQLCallback_UpdateClientData, wear);
+	}	
 	g_Database.Query(SQLCallback_UpdateClientData,wear);
 }
 
@@ -158,12 +195,17 @@ public void SQLCallback_Connect(Database db, const char[] error, any data)
 
 		if (!StrEqual(buffer, "mysql", false))
 		{
-			SetFailState("(WeaponStickers) Connection to database failed: Only MySQL support!");
+			g_Database = db;
+			SQLiteDB_Init();
+			g_bMySQL = false;
+			//SetFailState("(WeaponStickers) Connection to database failed: Only MySQL support!");
+			LogMessage("(WeaponStickers) We have a connection! Databse Type:%s",g_bMySQL ? "MySQL":"SQLite");
 			return;
 		}
 
 		delete driver;
 		g_Database = db;
+		g_bMySQL = true;
 
 		// Create tables if not exists.
 		char query[1024];
@@ -195,8 +237,39 @@ public void SQLCallback_Connect(Database db, const char[] error, any data)
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;", MySQL_TABLE);
 		g_Database.Query(SQLCallback_CreateTable, query);
 
-		LogMessage("(WeaponStickers) We have a connection!");
+		LogMessage("(WeaponStickers) We have a connection! Databse Type:%s",g_bMySQL ? "MySQL":"SQLite");
 	}
+}
+
+void SQLiteDB_Init()
+{
+	char query[1024];
+	FormatEx(query, sizeof(query),
+	"CREATE TABLE IF NOT EXISTS `%s` ( \
+		`id` INTEGER PRIMARY KEY AUTOINCREMENT, \
+		`steamid` varchar(64) NOT NULL,  \
+		`weaponindex` int(11) NOT NULL DEFAULT '0', \
+		`slot0` int(11) NOT NULL DEFAULT '0', \
+		`slot1` int(11) NOT NULL DEFAULT '0', \
+		`slot2` int(11) NOT NULL DEFAULT '0', \
+		`slot3` int(11) NOT NULL DEFAULT '0', \
+		`slot4` int(11) NOT NULL DEFAULT '0', \
+		`slot5` int(11) NOT NULL DEFAULT '0', \
+		`wear0` float4 NOT NULL DEFAULT '0.000000', \
+		`wear1` float4 NOT NULL DEFAULT '0.000000', \
+		`wear2` float4 NOT NULL DEFAULT '0.000000', \
+		`wear3` float4 NOT NULL DEFAULT '0.000000', \
+		`wear4` float4 NOT NULL DEFAULT '0.000000', \
+		`wear5` float4 NOT NULL DEFAULT '0.000000', \
+		`rotation0` float4 NOT NULL DEFAULT '0.000', \
+		`rotation1` float4 NOT NULL DEFAULT '0.000', \
+		`rotation2` float4 NOT NULL DEFAULT '0.000', \
+		`rotation3` float4 NOT NULL DEFAULT '0.000', \
+		`rotation4` float4 NOT NULL DEFAULT '0.000', \
+		`rotation5` float4 NOT NULL DEFAULT '0.000', \
+		UNIQUE(`steamid`, `weaponindex`) \
+		)", MySQL_TABLE);
+	g_Database.Query(SQLCallback_CreateTable, query);
 }
 
 public void SQLCallback_CreateTable(Database db, DBResultSet results, const char[] error, any data)
