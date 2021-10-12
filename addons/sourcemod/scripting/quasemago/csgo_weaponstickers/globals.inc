@@ -1,7 +1,7 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.0.20"
+#define PLUGIN_VERSION			"1.0.21"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
@@ -40,6 +40,7 @@ ConVar g_cvarUpdateViewModel = null;
 ConVar g_cvarReuseTime = null;
 ConVar g_cvarOverrideViewItem = null;
 ConVar g_cvarFlagUse = null;
+ConVar g_cvarInactive_days = null;
 
 /* Stickers */
 enum struct StickerSet
