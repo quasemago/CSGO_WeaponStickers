@@ -1,7 +1,7 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.0.21"
+#define PLUGIN_VERSION			"1.1"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
@@ -23,15 +23,7 @@
  */
 bool g_isLateLoad = false;
 bool g_bMySQL = false;
-enum ServerPlatform
-{
-	OS_Unknown = 0,
-	OS_Windows,
-	OS_Linux,
-	OS_Mac
-}
 
-ServerPlatform g_ServerPlatform;
 char g_requiredFlag[20];
 
 /* ConVars */
@@ -76,20 +68,3 @@ enum struct PlayerWeapon
 PlayerWeapon g_PlayerWeapon[MAXPLAYERS + 1][MAX_WEAPONS];
 bool g_isStickerRefresh[MAXPLAYERS + 1] = {false, ...};
 int g_playerReuseTime[MAXPLAYERS + 1] = {0, ...};
-
-/* SDK */
-Address g_pItemSystem = Address_Null;
-Address g_pItemSchema = Address_Null;
-
-// SDKCalls
-Handle g_SDKGetItemDefinition = null;
-Handle g_SDKGetNumSupportedStickerSlots = null;
-Handle g_SDKAddAttribute = null;
-Handle g_SDKGenerateAttribute = null;
-Handle g_SDKGetAttributeDefinitionByName = null;
-
-// Offsets
-int g_networkedDynamicAttributesOffset = -1;
-int g_attributeListReadOffset = -1;
-int g_attributeListCountOffset = -1;
-int g_econItemOffset = -1;
