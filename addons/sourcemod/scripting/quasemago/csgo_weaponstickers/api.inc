@@ -6,45 +6,60 @@ void LoadAPI()
 
 public int Native_SetWeaponSticker(Handle plugins, int numParams)
 {
-	int client = GetNativeCell(1);
-	if (!client || !IsClientInGame(client))
+	int iClient = GetNativeCell(1);
+
+	if (iClient < 1 || !IsClientInGame(iClient))
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%i]", client);
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index [%i]", iClient);
+
 		return false;
 	}
 	
-	int weapon = GetNativeCell(2);
-	if (!IsValidEntity(weapon))
+	int iWeapon = GetNativeCell(2);
+
+	if (!IsValidEntity(iWeapon))
 	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Invalid weapon entity [%i]", weapon);
 		return false;
 	}
 
-	Address pWeapon = GetEntityAddress(weapon);
-	if (pWeapon == Address_Null)
-	{
-		ThrowNativeError(SP_ERROR_NATIVE, "Invalid weapon address [%i]", weapon);
-		return false;
-	}
+	int iSlot = GetNativeCell(3);
 
-	int slot = GetNativeCell(3);
-	if (slot < 0 || slot > 5)
+	if (iSlot < 0 || iSlot > 5)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid sticker slot");
+
 		return false;
 	}
 
-	int defIndex = GetNativeCell(4);
-	if (defIndex == -1) // random
+	int iStickerIndex = GetNativeCell(4);
+
+	if (iStickerIndex == -1) // random
 	{
-		defIndex = GetRandomSticker();
+		iStickerIndex = GetRandomSticker();
 	}
 
-	Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
-	SetAttributeValue(client, pEconItemView, defIndex, "sticker slot %i id", slot);
-	SetAttributeValue(client, pEconItemView, view_as<int>(GetNativeCell(5)), "sticker slot %i wear", slot);
+	
+	CAttributeList pAttributeList = PTaH_GetEconItemViewFromEconEntity(iWeapon).NetworkedDynamicAttributesForDemos;
 
-	PTaH_ForceFullUpdate(client);
+	pAttributeList.SetOrAddAttributeValue(113 + iSlot * 4, iStickerIndex); // sticker slot %i id
+
+	float fStickerWear = GetNativeCell(5);
+	
+	if(fStickerWear != 0.0)
+	{
+		pAttributeList.SetOrAddAttributeValue(114 + iSlot * 4, fStickerWear); // sticker slot %i wear
+	}
+	
+	float fStickerRotation = GetNativeCell(6);
+	
+	if(fStickerRotation != 0.0)
+	{
+		pAttributeList.SetOrAddAttributeValue(116 + iSlot * 4, fStickerRotation); //sticker slot %i rotation
+	}
+
+	PTaH_ForceFullUpdate(iClient);
+
+
 	return true;
 }
 
