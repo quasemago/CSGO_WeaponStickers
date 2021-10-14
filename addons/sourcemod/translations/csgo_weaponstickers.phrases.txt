@@ -2,10 +2,17 @@
 {
 	"Menu Stickers Title"
 	{
-		"en"		"[Weapon Stickers]\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
-		"chi"		"[武器贴纸插件]\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
-		"pt"		"[Weapon Stickers]\n- Digite !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
-		"ru"		"[Наклейки на оружия]\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
+		"en"		"[Weapon Stickers].\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
+		"chi"		"[武器贴纸插件].\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
+		"pt"		"[Weapon Stickers].\n- Utilize !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
+		"ru"		"[Наклейки на оружия].\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
+	}
+	"Prefiks"
+	{
+		"en"		"{GREEN}[Weapon Stickers]{DEFAULT}"
+		"chi"		"{GREEN}[武器贴纸插件]{DEFAULT}"
+		"pt"		"{GREEN}[Weapon Stickers]{DEFAULT}"
+		"ru"		"{GREEN}[Наклейки на оружия]{DEFAULT}"
 	}
 	"Menu Stickers Slot Already Title"
 	{
@@ -161,6 +168,22 @@
 		"pt"		"Você removeu o sticker de todos os slots da {green}{1}{default}."
 		"ru"		"Вы удалили наклейку из всех {green}{1}{default} слотов"
 	}
+	"Remove Rotation AllSlots"
+	{
+		"#format"	"{1:s}"
+		"en"		"You have removed the sticker from all {green}{1}{default} slots"
+		"chi"		"你已把贴纸从 所有{green}{1}{default} 位置 上移除。"
+		"pt"		"Você removeu o sticker de todos os slots da {green}{1}{default}."
+		"ru"		"Вы удалили поворот из всех {green}{1}{default} слотов"
+	}
+	"Remove Wear AllSlots"
+	{
+		"#format"	"{1:s}"
+		"en"		"You have removed the sticker from all {green}{1}{default} slots"
+		"chi"		"你已把贴纸从 所有{green}{1}{default} 位置 上移除。"
+		"pt"		"Você removeu o sticker de todos os slots da {green}{1}{default}."
+		"ru"		"Вы удалили износ из всех {green}{1}{default} слотов"
+	}
 	"Invalid Stickers Weapon"
 	{
 		"en"		"This weapon is not valid for customizing stickers."
@@ -207,15 +230,15 @@
 	{
 		"en"		"Stickers Wear"
 		"chi"		"印花磨损设置菜单"
-		"pt"		"Desgate Stikcers"
+		"pt"		"Vestir adesivos"
 		"ru"		"Качество наклеек"
 	}
 	"Set Wear Title"
 	{
-		"#format"	"{1:i},{2:f}"
+		"#format"	"{1:i},{2:.1f}"
 		"en"		"Select Slot # {1} Wear \n Current Wear : {2}"
 		"chi"       "设置# {1} 位置印花的磨损 \n 当前磨损 : {2}"
-		"pt"		"Selecione Slot # {1} Desgaste \n Desgaste Atual : {2}"
+		"pt"		"Selecione Slot # {1} Vestir \n Desgaste Atual : {2}"
 		"ru"		"Выбран слот # {1} для качества наклейки \n Текущее качество : {2}"
 	}
 	"Reset Wear"
@@ -236,7 +259,7 @@
 	{
 		"en"		"Del Wear"
 		"chi"		"减少印花磨损"
-		"pt"		"Remover desgaste"
+		"pt"		"Del Wear"
 		"ru"		"Уменьшить износ"
 	}
 	"Wear Updated"
@@ -248,94 +271,94 @@
 	}
 	"Set Rotation"
 	{
-		"en"		"Set Rotation"
+		"en"		"Set Wear"
 		"chi"	    "设置印花磨损"
-		"pt"		"Definir rotação"
+		"pt"		"Definir desgaste"
 		"ru"		"Изменить поворот наклеек"
 	}
 	"Stickers Rotation"
 	{
-		"en"		"Stickers Rotation"
+		"en"		"Stickers Wear"
 		"chi"		"印花磨损设置菜单"
-		"pt"		"Rotação Stickers"
+		"pt"		"Vestir adesivos"
 		"ru"		"Поворот наклеек"
 	}
 	"Set Rotation Title"
 	{
-		"#format"	"{1:i},{2:f}"
+		"#format"	"{1:i},{2:.1f}"
 		"en"		"Select Slot # {1} to rotate the sticker \n Current Rotation : {2}"
 		"chi"       "设置# {1} 旋转贴纸 \n 当前转 : {2}"
-		"pt"		"Slot selecionado # {1} para rotacionar stickers \n Rotação atual : {2}"
-		"ru"		"Выбран слот # {1} для поворота наклейки \n Текущее поворот : {2}°"
+		"pt"		"Slot selecionado # {1} para rotar etiquetas \n Rotação atual : {2}"
+		"ru"		"Выбран слот # {1} для поворота наклейки \n Текущий поворот : {2}°"
 	}
 	"Reset Rotation"
 	{
 		"en"		"Return to original position"
 		"chi"		"返回原始位置"
-		"pt"		"Retornar à posição original"
+		"pt"		"Volver a la posición inicial"
 		"ru"		"Вернуть в исходное положение"
 	}
 	"Right Rotation15"
 	{
 		"en"		"Right by 15°"
 		"chi"		"向右走15"
-		"pt"		"Direita a 15°"
+		"pt"		"A la derecha en 15°"
 		"ru"		"Повернуть вправо на 15°"
 	}
 	"Left Rotation15"
 	{
 		"en"		"Left by 15°"
 		"chi"		"向左走15°"
-		"pt"		"Esquerda a 15°"
+		"pt"		"Izquierda en 15°"
 		"ru"		"Повернуть влево на 15°"
 	}
 	"Right Rotation30"
 	{
 		"en"		"Right by 30°"
 		"chi"		"向右走30°"
-		"pt"		"Direita a 30°"
+		"pt"		"A la derecha en 30°"
 		"ru"		"Повернуть вправо на 30°"
 	}
 	"Left Rotation30"
 	{
 		"en"		"Left by 30°"
 		"chi"		"向左走30°"
-		"pt"		"Esquerda a 30º"
+		"pt"		"Izquierda en"
 		"ru"		"Повернуть влево на 30°"
 	}
 	"Right Rotation45"
 	{
 		"en"		"Right by 45°"
 		"chi"		"向右走45°"
-		"pt"		"Direita a 45°"
+		"pt"		"A la derecha en 45°°"
 		"ru"		"Повернуть вправо на 45°"
 	}
 	"Left Rotation45"
 	{
 		"en"		"Left by 45°"
 		"chi"		"向左走45°"
-		"pt"		"Esquerda a 45°"
+		"pt"		"Izquierda en 45°"
 		"ru"		"Повернуть влево на 45°"
 	}
 	"Right Rotation60"
 	{
 		"en"		"Right by 60°"
 		"chi"		"向右走60°"
-		"pt"		"Direita a 60°"
+		"pt"		"A la derecha en 60°"
 		"ru"		"Повернуть вправо на 60°"
 	}
 	"Left Rotation60"
 	{
 		"en"		"Left by 60°"
 		"chi"		"向左走60°"
-		"pt"		"Esquerda a 60°"
+		"pt"		"Izquierda en 60°"
 		"ru"		"Повернуть влево на 60°"
 	}
 	"Rotation Updated"
 	{
 		"en"		"Rotation Updated"
 		"chi"		"旋转更新"
-		"pt"		"Rotação atualizada"
+		"pt"		"Rotação do atualizador"
 		"ru"		"Поворот обновлен"
 	}
 }
