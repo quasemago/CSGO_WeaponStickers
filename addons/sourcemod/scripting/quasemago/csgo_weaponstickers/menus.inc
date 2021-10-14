@@ -22,11 +22,6 @@ void MenusClientDisconnect(int client)
  */
 void ShowWeaponStickersMenu(int client, const char[] search = "")
 {
-	if (!IsPlayerAlive(client))
-	{
-		CPrintToChat(client, "%t", "Need Alive");
-		return;
-	}
 
 	int weapon = eItems_GetActiveWeapon(client);
 	if (!eItems_IsValidWeapon(weapon) || !IsValidDefIndex(eItems_GetWeaponDefIndexByWeapon(weapon)))
@@ -35,7 +30,7 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		return;
 	}
 
-	int slots = GetWeaponSupportedStickerSlots(weapon);
+	int slots = PTaH_GetEconItemViewFromEconEntity(weapon).GetItemDefinition().GetNumSupportedStickerSlots();
 	if (slots <= 0)
 	{
 		CPrintToChat(client, "%t", "Invalid Stickers Weapon");
@@ -63,11 +58,11 @@ void ShowWeaponStickersMenu(int client, const char[] search = "")
 		
 		if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
 		{
-			AddMenuItemFormat(menu, slot, _, "Slot %i\n  -> %s.", i, g_Sticker[eItems_GetStickerNumByDefIndex(g_PlayerWeapon[client][index].m_sticker[i])].m_displayName);
+			AddMenuItemFormat(menu, slot, _, "Слот %i\n  -> %s.", i, g_Sticker[eItems_GetStickerNumByDefIndex(g_PlayerWeapon[client][index].m_sticker[i])].m_displayName);
 		}
 		else
 		{
-			AddMenuItemFormat(menu, slot, _, "Slot %i\n  -> %T.", i, "None Sticker", client);
+			AddMenuItemFormat(menu, slot, _, "Слот %i\n  -> %T.", i, "None Sticker", client);
 		}
 	}
 
@@ -148,30 +143,32 @@ static void ShowWeaponStickerSlotMenu(int client, int slot)
 	
 	if (slot == ROTATION) 
 	{
+		char index[16];
+		char buffer[254];
+		char stickerName[MAX_LENGTH_DISPLAY];
+	    int slots = PTaH_GetEconItemViewFromEconEntity(weapon).GetItemDefinition().GetNumSupportedStickerSlots();
 		menu.SetTitle("%T", "Stickers Rotation", client, weaponName, slot);
-		for (int i = 0; i <= GetWeaponSupportedStickerSlots(eItems_GetActiveWeapon(client)) - 1; i++)
+		for (int i = 0; i < slots; i++)
 		{
-			static char index[16];
 			IntToString(i, index, sizeof(index));
-			char buffer[254];
 			Format(buffer, sizeof(buffer), "%i",i);
-			char stickerName[MAX_LENGTH_DISPLAY];
 			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[i], stickerName, sizeof(stickerName));
-			AddMenuItemFormat(menu, buffer, _, "Slot %i Sticker( %s ) \n -> Current rotate : %f°", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_rotation[i]);
+			AddMenuItemFormat(menu, buffer, _, "Слот %i Наклейка( %s ) \n -> Текущий поворот : %.1f°", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_rotation[i]);
 		}
 	
 	} else	if (slot == WEAR) 
-	{
+	{	
+		char index[16];
+		char buffer[254];
+		char stickerName[MAX_LENGTH_DISPLAY];
+	    int slots = PTaH_GetEconItemViewFromEconEntity(weapon).GetItemDefinition().GetNumSupportedStickerSlots();
 		menu.SetTitle("%T", "Stickers Wear", client, weaponName, slot);
-		for (int i = 0; i <= GetWeaponSupportedStickerSlots(eItems_GetActiveWeapon(client)) - 1; i++)
+		for (int i = 0; i < slots; i++)
 		{
-			static char index[16];
 			IntToString(i, index, sizeof(index));
-			char buffer[254];
 			Format(buffer, sizeof(buffer), "%i",i);
-			char stickerName[MAX_LENGTH_DISPLAY];
 			eItems_GetStickerDisplayNameByDefIndex(g_PlayerWeapon[client][weaponIndex].m_sticker[i], stickerName, sizeof(stickerName));
-			AddMenuItemFormat(menu, buffer, _, "Slot %i Sticker( %s ) \n -> Value : %f", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_wear[i]);
+			AddMenuItemFormat(menu, buffer, _, "Слот %i Наклейка( %s ) \n -> Тeкущий изнoc : %.1f", i, stickerName, g_PlayerWeapon[client][weaponIndex].m_wear[i]);
 		}
 	
 	} else if (slot != ALL_SLOTS && g_PlayerWeapon[client][weaponIndex].m_sticker[slot] != 0)
