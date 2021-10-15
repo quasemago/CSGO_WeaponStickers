@@ -271,16 +271,16 @@
 	}
 	"Set Rotation"
 	{
-		"en"		"Set Wear"
-		"chi"	    "设置印花磨损"
-		"pt"		"Definir desgaste"
+		"en"		"Change the rotation of stickers"
+		"chi"	    "更改贴纸的旋转"
+		"pt"		"Alterar rotação de adesivos"
 		"ru"		"Изменить поворот наклеек"
 	}
 	"Stickers Rotation"
 	{
-		"en"		"Stickers Wear"
-		"chi"		"印花磨损设置菜单"
-		"pt"		"Vestir adesivos"
+		"en"		"Rotate stickers"
+		"chi"		"旋转贴纸"
+		"pt"		"Girar adesivos"
 		"ru"		"Поворот наклеек"
 	}
 	"Set Rotation Title"
