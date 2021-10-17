@@ -171,17 +171,17 @@
 	"Remove Rotation AllSlots"
 	{
 		"#format"	"{1:s}"
-		"en"		"You have rotated the sticker from all {green}{1}{default} slots"
+		"en"		"You have removed rotated the sticker from all {green}{1}{default} slots"
 		"chi"		"你已把贴纸从 所有{green}{1}{default} 位置 上移除。"
-		"pt"		"Você rotacionou o sticker de todos os slots da {green}{1}{default}."
+		"pt"		"Você removeu rotação do sticker de todos os slots da {green}{1}{default}."
 		"ru"		"Вы удалили поворот из всех {green}{1}{default} слотов"
 	}
 	"Remove Wear AllSlots"
 	{
 		"#format"	"{1:s}"
-		"en"		"You have wear the sticker from all {green}{1}{default} slots"
+		"en"		"You have removed wear the sticker from all {green}{1}{default} slots"
 		"chi"		"你已把贴纸从 所有{green}{1}{default} 位置 上移除。"
-		"pt"		"Você desgatou o sticker de todos os slots da {green}{1}{default}."
+		"pt"		"Você removeu desgate do sticker de todos os slots da {green}{1}{default}."
 		"ru"		"Вы удалили износ из всех {green}{1}{default} слотов"
 	}
 	"Invalid Stickers Weapon"
