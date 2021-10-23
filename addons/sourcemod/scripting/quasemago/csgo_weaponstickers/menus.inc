@@ -22,6 +22,11 @@ void MenusClientDisconnect(int client)
  */
 void ShowWeaponStickersMenu(int client, const char[] search = "")
 {
+	if (!IsPlayerAlive(client))
+	{
+		CPrintToChat(client, "%t", "Need Alive");
+		return;
+	}
 
 	int weapon = eItems_GetActiveWeapon(client);
 	if (!eItems_IsValidWeapon(weapon) || !IsValidDefIndex(eItems_GetWeaponDefIndexByWeapon(weapon)))
