@@ -1,348 +1,334 @@
-"Phrases"
+/*
+ * ============================================================================
+ *
+ *  [CS:GO] Weapon Stickers.
+ *  Copyright (C) 2020 - Bruno "quasemago" Ronning <brunoronningfn@gmail.com>
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, per version 3 of the License, or
+ *  any later version.	
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * ============================================================================
+*/
+
+/**
+ * Includes.
+ */
+#include <sourcemod>
+#include <sdktools>
+#include <multicolors>
+#include <PTaH>
+#include <eItems>
+
+#pragma semicolon 1
+#pragma newdecls required
+#pragma tabsize 0
+
+/**
+ * Sub.
+ */
+#include "quasemago/csgo_weaponstickers/globals.inc"
+#include "quasemago/csgo_weaponstickers/helpers.inc"
+#include "quasemago/csgo_weaponstickers/commands.inc"
+#include "quasemago/csgo_weaponstickers/menus.inc"
+#include "quasemago/csgo_weaponstickers/database.inc"
+#include "quasemago/csgo_weaponstickers/api.inc"
+
+/**
+ * Plugin Init.
+ */
+public Plugin myinfo = 
 {
-	"Menu Stickers Title"
+	name = "[CS:GO] Weapon Stickers",
+	author = "quasemago and z1ntex",
+	description = "Stickers for Weapons",
+	version = PLUGIN_VERSION,
+	url = "https://github.com/quasemago"
+};
+
+public void OnPluginStart()
+{
+	if (GetEngineVersion() != Engine_CSGO)
 	{
-		"en"		"[Weapon Stickers]\n- Use !sticker <name> to search for stickers.\n \nSelect Slot:"
-		"chi"		"[武器贴纸插件]\n- 使用 !sticker <贴纸名称> 以搜索贴纸。\n \n选择贴纸位置："
-		"pt"		"[Weapon Stickers]\n- Digite !sticker <nome> para pesquisar por stickers.\n \nSelecione o Slot:"
-		"ru"		"[Наклейки на оружия]\n- Используйте !sticker <название>, чтобы найти наклейки.\n \nВыбрать слот:"
+		SetFailState("Only CS:GO support!");
+		return;
 	}
-	"Prefiks"
+
+	
+	if(PTaH_Version() < 101030)
 	{
-		"en"		"{GREEN}[Weapon Stickers]{DEFAULT}"
-		"chi"		"{GREEN}[武器贴纸插件]{DEFAULT}"
-		"pt"		"{GREEN}[Weapon Stickers]{DEFAULT}"
-		"ru"		"{GREEN}[Наклейки на оружия]{DEFAULT}"
+		char sBuf[16];
+
+		PTaH_Version(sBuf, sizeof(sBuf));
+		SetFailState("PTaH extension needs to be updated. (Installed Version: %s - Required Version: 1.1.3+) [ Download from: https://ptah.zizt.ru ]", sBuf);
+
+		return;
 	}
-	"Menu Stickers Slot Already Title"
+	// Translations.
+	LoadTranslations("common.phrases");
+	LoadTranslations("csgo_weaponstickers.phrases");
+
+	// ConVars.
+	CreateConVar("sm_weaponstickers_version", PLUGIN_VERSION, "Plugin Version", FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
+	g_cvarEnabled = CreateConVar("sm_weaponstickers_enabled", "1", "Enable or disable Plugin.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_cvarUpdateViewModel = CreateConVar("sm_weaponstickers_updateviewmodel", "0", "Specifies whether the view model will be updated when changing stickers (P.S: the player will experience a small rollback).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_cvarReuseTime = CreateConVar("sm_weaponstickers_reusetime", "5", "Specifies how many seconds it will be necessary to wait to update the stickers again.", FCVAR_NOTIFY, true, 0.1);
+	g_cvarOverrideViewItem = CreateConVar("sm_weaponstickers_overrideview", "1", "Specifies whether the plugin will override the weapon view (p.s: Recommended if !ws plugin is used).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_cvarFlagUse = CreateConVar("sm_weaponstickers_flag", "", "Specifies the required flag (e.g: 'a' for reserved slot).", FCVAR_NOTIFY);
+	g_cvarInactive_days = CreateConVar("sm_weaponstickers_inactive_days", "30", "Number of days before a player (SteamID) is marked as inactive and his data is deleted. (0 or any negative value to disable deleting)", FCVAR_NOTIFY);
+	
+	AutoExecConfig(true, "csgo_weaponstickers");
+	CSetPrefix("%t", "Prefiks");
+
+	// Forward event to modules.
+	LoadCommands();
+	LoadDatabase();
+
+	// Hooks.
+	PTaH(PTaH_GiveNamedItemPre, Hook, OnGiveNamedItemPre);
+	PTaH(PTaH_GiveNamedItemPost, Hook, OnGiveNamedItemPost);
+	
+	// Late Load.
+	if (g_isLateLoad)
 	{
-		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1} [slot {2}]\nCurrent Sticker: {3}\n \nSelect Set:"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸\n当前贴纸： {3}\n \n请选择："
-		"pt"		"Escolher sticker para {1} [slot {2}]\nSticker Atual: {3}\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1} [слот {2}]\nТекущая наклейка: {3}\n \nВыбрать сет:"
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (!IsClientInGame(i) || IsFakeClient(i))
+			{
+				continue;
+			}
+
+			OnClientPostAdminCheck(i);
+		}
 	}
-	"Menu Stickers Slot Title"
+}
+
+public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errMax)
+{
+	g_isLateLoad = late;
+
+	/* API */
+	LoadAPI();
+
+	/* Library */
+	RegPluginLibrary("csgo_weaponstickers");
+	return APLRes_Success;
+}
+
+/**
+ * Forwards.
+ */
+public void OnConfigsExecuted()
+{
+	DeleteInactivePlayerData();
+	g_cvarFlagUse.GetString(g_requiredFlag, sizeof(g_requiredFlag));
+}
+
+public void eItems_OnItemsSynced()
+{
+	g_stickerCount = eItems_GetStickersCount();
+	g_stickerSetsCount = eItems_GetStickersSetsCount();
+
+	RequestFrame(Frame_ItemsSync);
+}
+
+public void Frame_ItemsSync(any data)
+{
+	// Load stickers.
+	for (int i = 0; i < g_stickerSetsCount; i++)
 	{
-		"#format"	"{1:s},{2:i}"
-		"en"		"Choose sticker for {1} [slot {2}]\n \nSelect Set:"
-		"chi"		"正在为 {1} [slot {2}]选择贴纸\n \n请选择："
-		"pt"		"Escolher sticker para {1} [slot {2}]\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1} [слот {2}]\n \nВыбрать сет:"
+		g_StickerSet[i].m_Id = eItems_GetStickerSetIdByStickerSetNum(i);
+		eItems_GetStickerSetDisplayNameByStickerSetNum(i, g_StickerSet[i].m_displayName, MAX_LENGTH_DISPLAY);
+
+		if (g_StickerSet[i].m_Stickers != null)
+		{
+			delete g_StickerSet[i].m_Stickers;
+		}
+
+		g_StickerSet[i].m_Stickers = new ArrayList(1);
+		for (int j = 0; j < g_stickerCount; j++)
+		{
+			if (eItems_IsStickerInSet(j, g_StickerSet[i].m_Id))
+			{
+				g_Sticker[j].m_setId = g_StickerSet[i].m_Id;
+				g_StickerSet[i].m_Stickers.Push(j);
+			}
+		}
 	}
-	"Menu Stickers Slot Title AllSlots"
+
+	for (int i = 0; i < g_stickerCount; i++)
 	{
-		"#format"	"{1:s},{2:i}"
-		"en"		"Choose sticker for {1}\n \nSelect Set:"
-		"chi"		"正在为 {1} 选择贴纸中\n \n请选择："
-		"pt"		"Escolher sticker para {1}\n \nSelecione o Set:"
-		"ru"		"Выбрана наклейка на {1}\n \nВыберите сет:"
+		g_Sticker[i].m_defIndex = eItems_GetStickerDefIndexByStickerNum(i);
+		eItems_GetStickerDisplayNameByStickerNum(i, g_Sticker[i].m_displayName, MAX_LENGTH_DISPLAY);
 	}
-	"Menu Stickers Slot Remove"
+}
+
+public void OnClientPostAdminCheck(int client)
+{
+	if (!g_cvarEnabled.BoolValue || IsFakeClient(client))
 	{
-		"en"		"Remove Sticker"
-		"chi"		"移除贴纸"
-		"pt"		"Remover Sticker"
-		"ru"		"Удалить наклейку"
+		return;
 	}
-	"Menu Stickers Set Already Title"
+
+	LoadClientData(client);
+}
+
+public void OnClientDisconnect(int client)
+{
+	g_playerReuseTime[client] = 0;
+	g_isStickerRefresh[client] = false;
+
+	for (int i = 0; i < MAX_WEAPONS; i++)
 	{
-		"#format"	"{1:s},{2:i},{3:s},{4:s}"
-		"en"		"Choose sticker for {1} [slot {2}]\nCurrent sticker: {3}\n \nViewing Stickers '{4}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n当前贴纸： {3}\n \n正在浏览的贴纸类别 '{4}':"
-		"pt"		"Escolher sticker para {1} [slot {2}]\nSticker Atual: {3}\n \nVisualizando Stickers '{4}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}]\nТекущая наклейка: {3}\n \nПросмотр наклеек '{4}':"
+		for (int j = 0; j < MAX_STICKERS_SLOT; j++)
+		{
+			g_PlayerWeapon[client][i].m_sticker[j] = DEFAULT_PAINT;
+		}
 	}
-	"Menu Stickers Set Title"
+
+	MenusClientDisconnect(client);
+}
+
+/**
+ * Events & Hooks.
+ */
+public Action OnGiveNamedItemPre(int client, char classname[64], CEconItemView &item, bool &ignoredCEconItemView, bool &isOriginNULL, float origin[3])
+{
+	if (!g_cvarEnabled.BoolValue || !g_cvarOverrideViewItem.BoolValue)
 	{
-		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1} [slot {2}]\n \nViewing Stickers '{3}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n \n正在浏览的贴纸 '{3}':"
-		"pt"		"Escolher sticker para {1} [slot {2}]\n \nVisualizando Stickers '{3}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}]\n \nПросмотр наклеек '{3}':"
+		return Plugin_Continue;
 	}
-	"Menu Stickers Set Title AllSlots"
+
+	if (IsClientInGame(client) && !IsFakeClient(client))
 	{
-		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1}\n \nViewing Stickers '{3}':"
-		"chi"		"正在为 {1} 选择贴纸中\n \n正在浏览的贴纸 '{3}':"
-		"pt"		"Escolher sticker para {1}\n \nVisualizando Stickers '{3}':"
-		"ru"		"Выбрана наклейка на {1}\n \nПросмотр наклеек '{3}':"
+		int defIndex = eItems_GetWeaponDefIndexByClassName(classname);
+		if (IsValidDefIndex(defIndex))
+		{
+			if (ClientWeaponHasStickers(client, defIndex))
+			{
+				ignoredCEconItemView = true;
+				return Plugin_Changed;
+			}
+		}
 	}
-	"Menu Stickers Set Search Already Title"
+	return Plugin_Continue;
+}
+
+public void OnGiveNamedItemPost(int client, const char[] classname, const CEconItemView item, int entity, bool isOriginNULL, const float origin[3])
+{
+	if (!g_cvarEnabled.BoolValue || entity == -1)
 	{
-		"#format"	"{1:s},{2:i},{3:s},{4:s}"
-		"en"		"Choose sticker for {1} [slot {2}]\nCurrent Sticker: {3}\n \nSearching Sticker '{4}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n当前贴纸： {3}\n \n正在搜索 '{4}':"
-		"pt"		"Escolher sticker para {1} [slot {2}]\nSticker Atual: {3}\n \nPesquisando Sticker '{4}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}]\nТекущая наклейка: {3}\n \nПросмотр наклеек '{4}':"
+		return;
 	}
-	"Menu Stickers Set Search Title"
+
+	SetWeaponSticker(client, entity);
+}
+
+void SetWeaponSticker(int iClient, int iEntity)
+{
+	if (IsClientInGame(iClient) && !IsFakeClient(iClient) && IsValidEntity(iEntity))
 	{
-		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1} [slot {2}]\n \nSearching Sticker '{3}':"
-		"chi"		"正在为 {1} [位置 {2}]选择贴纸中\n \n正在搜索 '{3}':"
-		"pt"		"Escolher sticker para {1} [slot {2}]\n \nPesquisando Sticker '{3}':"
-		"ru"		"Выбрана наклейка на {1} [слот {2}]\n \nПросмотр наклеек '{3}':"
+		CEconItemView pItemView = PTaH_GetEconItemViewFromEconEntity(iEntity);
+
+		int iDefIndex = pItemView.GetItemDefinition().GetDefinitionIndex();
+
+		if (IsValidDefIndex(iDefIndex) && ClientWeaponHasStickers(iClient, iDefIndex))
+		{
+			int iIndex = eItems_GetWeaponNumByDefIndex(iDefIndex);
+
+			if (iIndex != -1)
+			{
+				// Check if item is already initialized by external ws.
+				if (GetEntProp(iEntity, Prop_Send, "m_iItemIDHigh") < 16384)
+				{
+					static int IDHigh = 16384;
+					
+					SetEntProp(iEntity, Prop_Send, "m_iItemIDLow", -1);
+					SetEntProp(iEntity, Prop_Send, "m_iItemIDHigh", IDHigh++);
+				}
+
+				// Change stickers.
+				CAttributeList pAttributeList = pItemView.NetworkedDynamicAttributesForDemos;
+
+				bool bUpdated = false;
+
+				for (int i = 0; i < MAX_STICKERS_SLOT; i++)
+				{
+					if (g_PlayerWeapon[iClient][iIndex].m_sticker[i] != 0)
+					{
+						// Sticker updated.
+						bUpdated = true;
+
+						pAttributeList.SetOrAddAttributeValue(113 + i * 4, g_PlayerWeapon[iClient][iIndex].m_sticker[i]); // sticker slot %i id
+						
+						if(g_PlayerWeapon[iClient][iIndex].m_wear[i] != 0.0)
+						{
+							pAttributeList.SetOrAddAttributeValue(114 + i * 4, g_PlayerWeapon[iClient][iIndex].m_wear[i]); // sticker slot %i wear
+						}
+						
+						if(g_PlayerWeapon[iClient][iIndex].m_rotation[i] != 0.0)
+						{
+							pAttributeList.SetOrAddAttributeValue(116 + i * 4, g_PlayerWeapon[iClient][iIndex].m_rotation[i]); // sticker slot %i rotation
+						}
+					}
+				}
+
+				// Update viewmodel if enabled.
+				if (bUpdated && g_isStickerRefresh[iClient])
+				{
+					g_isStickerRefresh[iClient] = false;					
+			
+					if (g_cvarUpdateViewModel.BoolValue)
+					{
+						PTaH_ForceFullUpdate(iClient);
+					}
+				}
+			}
+		}
+	}	
+}
+
+/**
+ * Functions.
+ */
+
+void RefreshClientWeapon(int client, int index)
+{
+	// Validate weapon defIndex or knife.
+	int defIndex = eItems_GetWeaponDefIndexByWeaponNum(index);
+	if (!IsValidDefIndex(defIndex) || eItems_IsDefIndexKnife(defIndex))
+	{
+		return;
 	}
-	"Menu Stickers Set Search Title AllSlots"
+
+	// Get weapon classname.
+	char classname[MAX_LENGTH_CLASSNAME];
+	if (!eItems_GetWeaponClassNameByWeaponNum(index, classname, sizeof(classname)))
 	{
-		"#format"	"{1:s},{2:i},{3:s}"
-		"en"		"Choose sticker for {1}\n \nSearching Sticker '{3}':"
-		"chi"		"正在为 {1} 选择贴纸中\n \n正在搜索 '{3}':"
-		"pt"		"Escolher sticker para {1}\n \nPesquisando Sticker '{3}':"
-		"ru"		"Выбрана наклейка на {1}\n \nПросмотр наклеек '{3}':"
+		return;
 	}
-	"Menu Stickers Slot Search None"
+
+	int size = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+	for (int i = 0; i < size; i++)
 	{
-		"en"		"No stickers found!"
-		"chi"		"贴纸未找到！"
-		"pt"		"Nenhum sticker encontrado!"
-		"ru"		"Никаких наклеек не найдено!"
-	}
-	"Disabled Feature"
-	{
-		"en"		"This feature is disabled!"
-		"chi"		"此功能已关闭！"
-		"pt"		"Esse recurso está desativado!"
-		"ru"		"Данная функция отключена!"
-	}
-	"Min Length Search"
-	{
-		"en"		"You must enter at least 2 characters."
-		"chi"		"您至少该输入2个字符。"
-		"pt"		"Você deve inserir no minimo 2 caracteres."
-		"ru"		"Вы должны ввести не менее 2 символов."
-	}
-	"Need Alive"
-	{
-		"en"		"You must be alive to use this feature."
-		"chi"		"您只能在存活时使用该指令。"
-		"pt"		"Você precisa estar vivo para utilizar esse recurso."
-		"ru"		"Вы должны быть живы, чтобы использовать эту функцию."
-	}
-	"Need Access"
-	{
-		"en"		"You do not have permission to use this feature."
-		"chi"		"您没有权限使用该指令。"
-		"pt"		"Você não possui permissão para utilizar esse recurso."
-		"ru"		"У вас нет прав на использование данной функции."
-	}
-	"Delay Sticker"
-	{
-		"#format"	"{1:i}"
-		"en"		"You should wait {lightgreen}{1} {default}second(s) to change your weapon stickers again."
-		"chi"		"你需要再等待 {lightgreen}{1} {default}秒才能更换你的贴纸。"
-		"pt"		"Você deve esperar {lightgreen}{1} {default}segundos para alterar novamente os stickers da sua arma."
-		"ru"		"Вы должны подождать {lightgreen}{1} {default}секунд(ы), чтобы снова поменять наклейку."
-	}
-	"Change Sticker"
-	{
-		"#format"	"{1:s},{2:s},{3:i}"
-		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in the slot {lightgreen}{3}{default}."
-		"chi"		"你已把 贴纸 {orchid}{1}{default} 添加到 {green}{2}{default} 的 位置{lightgreen}{3}{default} 上。"
-		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} no slot {lightgreen}{3}{default}."
-		"ru"		"Вы наклеили {orchid}{1}{default} на {green}{2}{default} в слот под номером {lightgreen}{3}{default}."
-	}
-	"Change Sticker AllSlots"
-	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"You added the {orchid}{1}{default} sticker for {green}{2}{default} in all slots."
-		"chi"		"你已把 贴纸 {orchid}{1}{default} 一键四连到 {green}{2}{default}。"
-		"pt"		"Você adicionou o sticker {orchid}{1}{default} para a {green}{2}{default} em todos os slots."
-		"ru"		"Вы наклеили {orchid}{1}{default} на {green}{2}{default} во все слоты."
-	}
-	"Remove Sticker"
-	{
-		"#format"	"{1:s},{2:i}"
-		"en"		"You removed the sticker from slot {lightgreen}{2}{default} of the {green}{1}{default}."
-		"chi"		"你已把贴纸从 {lightgreen}{2}{default} 的 位置{green}{1}{default} 上 移除。"
-		"pt"		"Você removeu o sticker do slot {lightgreen}{2}{default} da {green}{1}{default}."
-		"ru"		"Вы удалили наклейку из слота под номером {lightgreen}{2}{default} на {green}{1}{default}."
-	}
-	"Remove Sticker AllSlots"
-	{
-		"#format"	"{1:s}"
-		"en"		"You have removed the sticker from all {green}{1}{default} slots"
-		"chi"		"你已把贴纸从 所有{green}{1}{default} 位置 上移除。"
-		"pt"		"Você removeu o sticker de todos os slots da {green}{1}{default}."
-		"ru"		"Вы удалили наклейку из всех {green}{1}{default} слотов"
-	}
-	"Invalid Stickers Weapon"
-	{
-		"en"		"This weapon is not valid for customizing stickers."
-		"chi"		"您手上所持的武器，不能更改贴纸。"
-		"pt"		"Essa arma não é valida para personalizar os stickers."
-		"ru"		"Это оружие не подходит для наклеек."
-	}
-	"Unknown Error"
-	{
-		"en"		"There was an error while trying to update your weapon stickers, try again!"
-		"chi"		"在更新您的的贴纸时出现了错误，请重试！"
-		"pt"		"Ocorreu um erro ao tentar atualizar os stickers da sua arma, tente novamente!"
-		"ru"		"Произошла ошибка при попытке обновить ваши наклейки, попробуйте еще раз!"
-	}
-	"Validate Error"
-	{
-		"en"		"There was an error validating your weapon, try again!"
-		"chi"		"在检测您的武器时出现了错误，请重试！"
-		"pt"		"Ocorreu um erro na validação da sua arma, tente novamente!"
-		"ru"		"Произошла ошибка при проверке вашего оружия, попробуйте еще раз!"
-	}
-	"None Sticker"
-	{
-		"en"		"None"
-		"chi"		"无"
-		"pt"		"Nenhum"
-		"ru"		"Нет"
-	}
-	"All Slots"
-	{
-		"en"		"All Slots"
-		"chi"		"一键四连"
-		"pt"		"Todos Slots"
-		"ru"		"Все слоты"
-	}
-	"Set Wear"
-	{
-		"en"		"Set Wear"
-		"chi"	    "设置印花磨损"
-		"pt"		"Definir Desgaste"
-		"ru"		"Изменить качество наклеек"
-	}
-	"Stickers Wear"
-	{
-		"en"		"Stickers Wear"
-		"chi"		"印花磨损设置菜单"
-		"pt"		"Desgastar Stickers"
-		"ru"		"Качество наклеек"
-	}
-	"Set Wear Title"
-	{
-		"#format"	"{1:i},{2:.1f}"
-		"en"		"Select Slot #{1} Wear \n Current Wear : {2}"
-		"chi"       "设置 #{1} 位置印花的磨损 \n 当前磨损 : {2}"
-		"pt"		"Selecione Slot #{1} Desgaste \n Desgaste Atual : {2}"
-		"ru"		"Выбран слот #{1} для качества наклейки \n Текущее качество : {2}"
-	}
-	"Reset Wear"
-	{
-		"en"		"Reset Wear"
-		"chi"		"重置印花磨损"
-		"pt"		"Resetar Desgaste"
-		"ru"		"Сбросить износ"
-	}
-	"Add Wear"
-	{
-		"en"		"Add Wear"
-		"chi"		"增加印花磨损"
-		"pt"		"Aumentar Desgaste"
-		"ru"		"Увеличить износ"
-	}
-	"Del Wear"
-	{
-		"en"		"Del Wear"
-		"chi"		"减少印花磨损"
-		"pt"		"Diminuir Desgaste"
-		"ru"		"Уменьшить износ"
-	}
-	"Wear Updated"
-	{
-		"en"		"Wear Updated"
-		"chi"		"武器印花的磨损已更新"
-		"pt"		"Desgaste atualizado"
-		"ru"		"Износ обновлен"
-	}
-	"Set Rotation"
-	{
-		"en"		"Change the rotation of stickers"
-		"chi"	    "更改贴纸的旋转"
-		"pt"		"Alterar rotação de stickers"
-		"ru"		"Изменить поворот наклеек"
-	}
-	"Stickers Rotation"
-	{
-		"en"		"Rotate Stickers"
-		"chi"		"旋转贴纸"
-		"pt"		"Rotacionar Stickers"
-		"ru"		"Поворот наклеек"
-	}
-	"Set Rotation Title"
-	{
-		"#format"	"{1:i},{2:.1f}"
-		"en"		"Select Slot #{1} to rotate the sticker \n Current Rotation: {2}"
-		"chi"       "设置 #{1} 旋转贴纸 \n 当前转: {2}"
-		"pt"		"Slot selecionado #{1} para rotacionar sticker \n Rotação Atual: {2}"
-		"ru"		"Выбран слот #{1} для поворота наклейки \n Текущий поворот: {2}°"
-	}
-	"Reset Rotation"
-	{
-		"en"		"Return to original position"
-		"chi"		"返回原始位置"
-		"pt"		"Retornar à posição original"
-		"ru"		"Вернуть в исходное положение"
-	}
-	"Right Rotation15"
-	{
-		"en"		"Right by 15°"
-		"chi"		"向右走15"
-		"pt"		"Diretia a 15°"
-		"ru"		"Повернуть вправо на 15°"
-	}
-	"Left Rotation15"
-	{
-		"en"		"Left by 15°"
-		"chi"		"向左走15°"
-		"pt"		"Esquerda a 15°"
-		"ru"		"Повернуть влево на 15°"
-	}
-	"Right Rotation30"
-	{
-		"en"		"Right by 30°"
-		"chi"		"向右走30°"
-		"pt"		"Diretia a 30°"
-		"ru"		"Повернуть вправо на 30°"
-	}
-	"Left Rotation30"
-	{
-		"en"		"Left by 30°"
-		"chi"		"向左走30°"
-		"pt"		"Esquerda a 30º"
-		"ru"		"Повернуть влево на 30°"
-	}
-	"Right Rotation45"
-	{
-		"en"		"Right by 45°"
-		"chi"		"向右走45°"
-		"pt"		"Diretia a 45°"
-		"ru"		"Повернуть вправо на 45°"
-	}
-	"Left Rotation45"
-	{
-		"en"		"Left by 45°"
-		"chi"		"向左走45°"
-		"pt"		"Esquerda a 45°"
-		"ru"		"Повернуть влево на 45°"
-	}
-	"Right Rotation60"
-	{
-		"en"		"Right by 60°"
-		"chi"		"向右走60°"
-		"pt"		"Diretia a 60°"
-		"ru"		"Повернуть вправо на 60°"
-	}
-	"Left Rotation60"
-	{
-		"en"		"Left by 60°"
-		"chi"		"向左走60°"
-		"pt"		"Esquerda a 60°"
-		"ru"		"Повернуть влево на 60°"
-	}
-	"Rotation Updated"
-	{
-		"en"		"Rotation Updated"
-		"chi"		"旋转更新"
-		"pt"		"Rotação atualizada"
-		"ru"		"Поворот обновлен"
+		int weapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+		if (eItems_IsValidWeapon(weapon))
+		{
+			int temp = eItems_GetWeaponNumByWeapon(weapon);
+			if (temp == index)
+			{
+				eItems_RespawnWeapon(client, weapon);
+				break;
+			}
+		}
 	}
 }
