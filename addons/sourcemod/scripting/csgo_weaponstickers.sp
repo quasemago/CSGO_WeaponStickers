@@ -157,7 +157,7 @@ public void Frame_ItemsSync(any data)
 		g_StickerSet[i].m_Stickers = new ArrayList(1);
 		for (int j = 0; j < g_stickerCount; j++)
 		{
-			if (eItems_IsStickerInSet(j, g_StickerSet[i].m_Id))
+			if (eItems_IsStickerInSet(i, j))
 			{
 				g_Sticker[j].m_setId = g_StickerSet[i].m_Id;
 				g_StickerSet[i].m_Stickers.Push(j);
