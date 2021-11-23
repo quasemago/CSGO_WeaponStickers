@@ -206,7 +206,7 @@
 	"Set Wear"
 	{
 		"en"		"Set Wear"
-		"chi"	    "设置印花磨损"
+		"chi"	   	"设置印花磨损"
 		"pt"		"Definir Desgaste"
 		"ru"		"Изменить качество наклеек"
 	}
@@ -221,7 +221,7 @@
 	{
 		"#format"	"{1:i},{2:.1f}"
 		"en"		"Select Slot #{1} Wear \n Current Wear : {2}"
-		"chi"       "设置 #{1} 位置印花的磨损 \n 当前磨损 : {2}"
+		"chi"       	"设置 #{1} 位置印花的磨损 \n 当前磨损 : {2}"
 		"pt"		"Selecione Slot #{1} Desgaste \n Desgaste Atual : {2}"
 		"ru"		"Выбран слот #{1} для качества наклейки \n Текущее качество : {2}"
 	}
@@ -256,7 +256,7 @@
 	"Set Rotation"
 	{
 		"en"		"Change the rotation of stickers"
-		"chi"	    "更改贴纸的旋转"
+		"chi"		"更改贴纸的旋转"
 		"pt"		"Alterar rotação de stickers"
 		"ru"		"Изменить поворот наклеек"
 	}
@@ -271,7 +271,7 @@
 	{
 		"#format"	"{1:i},{2:.1f}"
 		"en"		"Select Slot #{1} to rotate the sticker \n Current Rotation: {2}"
-		"chi"       "设置 #{1} 旋转贴纸 \n 当前转: {2}"
+		"chi"		"设置 #{1} 旋转贴纸 \n 当前转: {2}"
 		"pt"		"Slot selecionado #{1} para rotacionar sticker \n Rotação Atual: {2}"
 		"ru"		"Выбран слот #{1} для поворота наклейки \n Текущий поворот: {2}°"
 	}
