@@ -1,7 +1,7 @@
 /**
  * Defines.
  */
-#define PLUGIN_VERSION			"1.3"
+#define PLUGIN_VERSION			"1.3.5"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
 #define MySQL_TABLE				"csgo_weaponstickers"
