@@ -7,8 +7,8 @@
 #define MySQL_TABLE				"csgo_weaponstickers"
 
 #define MAX_WEAPONS				128
-#define MAX_STICKERS			6000
-#define MAX_STICKERS_SETS		100
+#define MAX_STICKERS			8000
+#define MAX_STICKERS_SETS		200
 #define MAX_STICKERS_SLOT		6
 
 #define MAX_LENGTH_AUTHID		64
