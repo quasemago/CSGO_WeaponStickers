@@ -4,9 +4,9 @@
 #define PLUGIN_VERSION			"1.3.5"
 
 #define MySQL_DATABASE			"csgo_weaponstickers"
-#define MySQL_TABLE				"csgo_weaponstickers"
+#define MySQL_TABLE			"csgo_weaponstickers"
 
-#define MAX_WEAPONS				128
+#define MAX_WEAPONS			128
 #define MAX_STICKERS			8000
 #define MAX_STICKERS_SETS		200
 #define MAX_STICKERS_SLOT		6
