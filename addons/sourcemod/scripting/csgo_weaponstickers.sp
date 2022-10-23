@@ -29,11 +29,9 @@
 #include <PTaH>
 #include <eItems>
 
-#undef REQUIRE_EXTENSIONS
-#include <sourcescramble>
-
 #pragma semicolon 1
 #pragma newdecls required
+#pragma tabsize 0
 
 /**
  * Sub.
@@ -51,7 +49,7 @@
 public Plugin myinfo = 
 {
 	name = "[CS:GO] Weapon Stickers",
-	author = "quasemago",
+	author = "quasemago and z1ntex",
 	description = "Stickers for Weapons",
 	version = PLUGIN_VERSION,
 	url = "https://github.com/quasemago"
@@ -65,6 +63,16 @@ public void OnPluginStart()
 		return;
 	}
 
+	
+	if(PTaH_Version() < 101030)
+	{
+		char sBuf[16];
+
+		PTaH_Version(sBuf, sizeof(sBuf));
+		SetFailState("PTaH extension needs to be updated. (Installed Version: %s - Required Version: 1.1.3+) [ Download from: https://ptah.zizt.ru ]", sBuf);
+
+		return;
+	}
 	// Translations.
 	LoadTranslations("common.phrases");
 	LoadTranslations("csgo_weaponstickers.phrases");
@@ -76,12 +84,12 @@ public void OnPluginStart()
 	g_cvarReuseTime = CreateConVar("sm_weaponstickers_reusetime", "5", "Specifies how many seconds it will be necessary to wait to update the stickers again.", FCVAR_NOTIFY, true, 0.1);
 	g_cvarOverrideViewItem = CreateConVar("sm_weaponstickers_overrideview", "1", "Specifies whether the plugin will override the weapon view (p.s: Recommended if !ws plugin is used).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_cvarFlagUse = CreateConVar("sm_weaponstickers_flag", "", "Specifies the required flag (e.g: 'a' for reserved slot).", FCVAR_NOTIFY);
-
+	g_cvarInactive_days = CreateConVar("sm_weaponstickers_inactive_days", "30", "Number of days before a player (SteamID) is marked as inactive and his data is deleted. (0 or any negative value to disable deleting)", FCVAR_NOTIFY);
+	
 	AutoExecConfig(true, "csgo_weaponstickers");
-	CSetPrefix("{green}[Weapon Stickers]{default}");
+	CSetPrefix("%t", "Prefiks");
 
 	// Forward event to modules.
-	LoadSDK();
 	LoadCommands();
 	LoadDatabase();
 
@@ -111,10 +119,6 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errMax)
 	/* API */
 	LoadAPI();
 
-	/* External Natives */
-	MarkNativeAsOptional("MemoryBlock.MemoryBlock");
-	MarkNativeAsOptional("MemoryBlock.Address.get");
-
 	/* Library */
 	RegPluginLibrary("csgo_weaponstickers");
 	return APLRes_Success;
@@ -125,6 +129,7 @@ public APLRes AskPluginLoad2(Handle plugin, bool late, char[] error, int errMax)
  */
 public void OnConfigsExecuted()
 {
+	DeleteInactivePlayerData();
 	g_cvarFlagUse.GetString(g_requiredFlag, sizeof(g_requiredFlag));
 }
 
@@ -152,7 +157,7 @@ public void Frame_ItemsSync(any data)
 		g_StickerSet[i].m_Stickers = new ArrayList(1);
 		for (int j = 0; j < g_stickerCount; j++)
 		{
-			if (eItems_IsStickerInSet(j, g_StickerSet[i].m_Id))
+			if (eItems_IsStickerInSet(i, j))
 			{
 				g_Sticker[j].m_setId = g_StickerSet[i].m_Id;
 				g_StickerSet[i].m_Stickers.Push(j);
@@ -220,7 +225,7 @@ public Action OnGiveNamedItemPre(int client, char classname[64], CEconItemView &
 
 public void OnGiveNamedItemPost(int client, const char[] classname, const CEconItemView item, int entity, bool isOriginNULL, const float origin[3])
 {
-	if (!g_cvarEnabled.BoolValue)
+	if (!g_cvarEnabled.BoolValue || entity == -1)
 	{
 		return;
 	}
@@ -228,58 +233,63 @@ public void OnGiveNamedItemPost(int client, const char[] classname, const CEconI
 	SetWeaponSticker(client, entity);
 }
 
-void SetWeaponSticker(int client, int entity)
+void SetWeaponSticker(int iClient, int iEntity)
 {
-	if (IsClientInGame(client) && !IsFakeClient(client) && IsValidEntity(entity))
+	if (IsClientInGame(iClient) && !IsFakeClient(iClient) && IsValidEntity(iEntity))
 	{
-		int defIndex = eItems_GetWeaponDefIndexByWeapon(entity);
-		if (IsValidDefIndex(defIndex) && ClientWeaponHasStickers(client, defIndex))
+		CEconItemView pItemView = PTaH_GetEconItemViewFromEconEntity(iEntity);
+
+		int iDefIndex = pItemView.GetItemDefinition().GetDefinitionIndex();
+
+		if (IsValidDefIndex(iDefIndex) && ClientWeaponHasStickers(iClient, iDefIndex))
 		{
-			int index = eItems_GetWeaponNumByDefIndex(defIndex);
-			if (index != -1)
+			int iIndex = eItems_GetWeaponNumByDefIndex(iDefIndex);
+
+			if (iIndex != -1)
 			{
 				// Check if item is already initialized by external ws.
-				if (GetEntProp(entity, Prop_Send, "m_iItemIDHigh") < 16384)
+				if (GetEntProp(iEntity, Prop_Send, "m_iItemIDHigh") < 16384)
 				{
 					static int IDHigh = 16384;
-					SetEntProp(entity, Prop_Send, "m_iItemIDLow", -1);
-					SetEntProp(entity, Prop_Send, "m_iItemIDHigh", IDHigh++);
-					SetEntProp(entity, Prop_Send, "m_iAccountID", GetSteamAccountID(client, true));
-					SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
-					SetEntPropEnt(entity, Prop_Send, "m_hPrevOwner", -1);
+					
+					SetEntProp(iEntity, Prop_Send, "m_iItemIDLow", -1);
+					SetEntProp(iEntity, Prop_Send, "m_iItemIDHigh", IDHigh++);
 				}
 
 				// Change stickers.
-				Address pWeapon = GetEntityAddress(entity);
-				if (pWeapon == Address_Null)
-				{
-					CPrintToChat(client, "%t", "Unknown Error");
-					return;
-				}
+				CAttributeList pAttributeList = pItemView.NetworkedDynamicAttributesForDemos;
 
-				Address pEconItemView = pWeapon + view_as<Address>(g_econItemOffset);
-			
-				bool isUpdated = false;
+				bool bUpdated = false;
+
 				for (int i = 0; i < MAX_STICKERS_SLOT; i++)
 				{
-					if (g_PlayerWeapon[client][index].m_sticker[i] != 0)
+					if (g_PlayerWeapon[iClient][iIndex].m_sticker[i] != 0)
 					{
 						// Sticker updated.
-						isUpdated = true;
+						bUpdated = true;
 
-						SetAttributeValue(client, pEconItemView, g_PlayerWeapon[client][index].m_sticker[i], "sticker slot %i id", i);
-						SetAttributeValue(client, pEconItemView, view_as<int>(0.0), "sticker slot %i wear", i); // default wear.
+						pAttributeList.SetOrAddAttributeValue(113 + i * 4, g_PlayerWeapon[iClient][iIndex].m_sticker[i]); // sticker slot %i id
+						
+						if(g_PlayerWeapon[iClient][iIndex].m_wear[i] != 0.0)
+						{
+							pAttributeList.SetOrAddAttributeValue(114 + i * 4, g_PlayerWeapon[iClient][iIndex].m_wear[i]); // sticker slot %i wear
+						}
+						
+						if(g_PlayerWeapon[iClient][iIndex].m_rotation[i] != 0.0)
+						{
+							pAttributeList.SetOrAddAttributeValue(116 + i * 4, g_PlayerWeapon[iClient][iIndex].m_rotation[i]); // sticker slot %i rotation
+						}
 					}
 				}
 
 				// Update viewmodel if enabled.
-				if (isUpdated && g_isStickerRefresh[client])
+				if (bUpdated && g_isStickerRefresh[iClient])
 				{
-					g_isStickerRefresh[client] = false;
+					g_isStickerRefresh[iClient] = false;					
 			
 					if (g_cvarUpdateViewModel.BoolValue)
 					{
-						PTaH_ForceFullUpdate(client);
+						PTaH_ForceFullUpdate(iClient);
 					}
 				}
 			}
@@ -290,124 +300,6 @@ void SetWeaponSticker(int client, int entity)
 /**
  * Functions.
  */
-void LoadSDK()
-{	
-	Handle gameConf = LoadGameConfigFile("csgo_weaponstickers.games");
-
-	if (gameConf == null)
-	{
-		SetFailState("Game config was not loaded right.");
-		return;
-	}
-
-	// Get Server Platform.
-	g_ServerPlatform = view_as<ServerPlatform>(GameConfGetOffset(gameConf, "ServerPlatform"));
-	if (g_ServerPlatform == OS_Mac || g_ServerPlatform == OS_Unknown)
-	{
-		SetFailState("Only Linux/Windows support!");
-		return;
-	}
-
-	// Setup CEconItem::GetItemDefinition.
-	StartPrepSDKCall(SDKCall_Raw);
-	PrepSDKCall_SetFromConf(gameConf, SDKConf_Virtual, "CEconItem::GetItemDefinition");
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-
-	if (!(g_SDKGetItemDefinition = EndPrepSDKCall()))
-	{
-		SetFailState("Method \"CEconItem::GetItemDefinition\" was not loaded right.");
-		return;
-	}
-
-	// Setup CEconItemDefinition::GetNumSupportedStickerSlots.
-	StartPrepSDKCall(SDKCall_Raw);
-	PrepSDKCall_SetFromConf(gameConf, SDKConf_Virtual, "CEconItemDefinition::GetNumSupportedStickerSlots");
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-
-	if (!(g_SDKGetNumSupportedStickerSlots = EndPrepSDKCall()))
-	{
-		SetFailState("Method \"CEconItemDefinition::GetNumSupportedStickerSlots\" was not loaded right.");
-		return;
-	}
-
-	// Setup ItemSystem.
-	StartPrepSDKCall(SDKCall_Static);
-	PrepSDKCall_SetFromConf(gameConf, SDKConf_Signature, "ItemSystem");
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-
-	Handle SDKItemSystem;
-	if (!(SDKItemSystem = EndPrepSDKCall()))
-	{
-		SetFailState("Method \"ItemSystem\" was not loaded right.");
-		return;
-	}
-
-	g_pItemSystem = SDKCall(SDKItemSystem);
-	if (g_pItemSystem == Address_Null)
-	{
-		SetFailState("Failed to get \"ItemSystem\" pointer address.");
-		return;
-	}
-
-	delete SDKItemSystem;
-	g_pItemSchema = g_pItemSystem + view_as<Address>(4);
-
-	// Setup CAttributeList::AddAttribute.
-	StartPrepSDKCall(SDKCall_Raw);
-	PrepSDKCall_SetFromConf(gameConf, SDKConf_Signature, "CAttributeList::AddAttribute");
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-
-	if (g_ServerPlatform == OS_Windows)
-	{
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-	}
-
-	if (!(g_SDKAddAttribute = EndPrepSDKCall()))
-	{
-		SetFailState("Method \"CAttributeList::AddAttribute\" was not loaded right.");
-		return;
-	}
-
-	// Linux only.
-	if (g_ServerPlatform == OS_Linux)
-	{
-		// Setup CEconItemSystem::GenerateAttribute.
-		StartPrepSDKCall(SDKCall_Raw);
-		PrepSDKCall_SetFromConf(gameConf, SDKConf_Signature, "CEconItemSystem::GenerateAttribute");
-		PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-		PrepSDKCall_AddParameter(SDKType_Float, SDKPass_Plain);
-		PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-
-		if (!(g_SDKGenerateAttribute = EndPrepSDKCall()))
-		{
-			SetFailState("Method \"CEconItemSystem::GenerateAttribute\" was not loaded right.");
-			return;
-		}
-	}
-
-	// Setup CEconItemSchema::GetAttributeDefinitionByName.
-	StartPrepSDKCall(SDKCall_Raw);
-	PrepSDKCall_SetFromConf(gameConf, SDKConf_Signature, "CEconItemSchema::GetAttributeDefinitionByName");
-	PrepSDKCall_AddParameter(SDKType_String, SDKPass_Pointer);
-	PrepSDKCall_SetReturnInfo(SDKType_PlainOldData, SDKPass_Plain);
-
-	if (!(g_SDKGetAttributeDefinitionByName = EndPrepSDKCall()))
-	{
-		SetFailState("Method \"CEconItemSchema::GetAttributeDefinitionByName\" was not loaded right.");
-		return;
-	}
-
-	// Get Offsets.
-	FindGameConfOffset(gameConf, g_networkedDynamicAttributesOffset, "m_NetworkedDynamicAttributesForDemos");
-	FindGameConfOffset(gameConf, g_attributeListReadOffset, "CAttributeList_Read");
-	FindGameConfOffset(gameConf, g_attributeListCountOffset, "CAttributeList_Count");
-
-	delete gameConf;
-
-	// Find netprops Offsets.
-	g_econItemOffset = FindSendPropOffset("CBaseCombatWeapon", "m_Item");
-}
 
 void RefreshClientWeapon(int client, int index)
 {
