@@ -8,7 +8,6 @@ Weapon Stickers for CS:GO, with the following features:
 
 ## Requirements
 - **eItems:** https://github.com/ESK0/eItems
-  - **Fork eItems:** https://github.com/quasemago/eItems
 - **REST in Pawn:** https://github.com/ErikMinekus/sm-ripext
 - **PTaH:** https://github.com/komashchenko/PTaH
 - **MultiColors:** https://github.com/Bara/Multi-Colors
