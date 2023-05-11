@@ -76,7 +76,7 @@ void UpdateClientData(int client, int index, int slot)
 	}
 	else 
 	{
-		FormatEx(query, sizeof(query), "UPDATE %s SET `slot%i`='%i',`weaponindex`='%i',`last_seen`='%d' WHERE `steamid`=\"%s\";", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_sticker[slot],defIndex,GetTime(),authId);
+		FormatEx(query, sizeof(query), "UPDATE %s SET `slot%i`='%i',`last_seen`='%d' WHERE `steamid`=\"%s\" AND `weaponindex`='%i';", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_sticker[slot],GetTime(),authId,defIndex);
 		g_Database.Query(SQLCallback_UpdateClientData, query);
 
 		FormatEx(query, sizeof(query), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `slot%i`,`last_seen`) VALUES (\"%s\", '%i', '%i','%d');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_sticker[slot], slot, g_PlayerWeapon[client][index].m_sticker[slot],GetTime());
@@ -118,7 +118,7 @@ void UpdateRotationData(int client, int index, int slot)
 	}
 	else 
 	{
-		FormatEx(rotation, sizeof(rotation), "UPDATE %s SET `rotation%i`='%f',`weaponindex`='%d',`last_seen`='%d' WHERE `steamid`=\"%s\";", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_rotation[slot],defIndex,GetTime(),authId);
+		FormatEx(rotation, sizeof(rotation), "UPDATE %s SET `rotation%i`='%f',`last_seen`='%d' WHERE `steamid`=\"%s\" AND `weaponindex`='%d';", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_rotation[slot],GetTime(),authId,defIndex);
 		g_Database.Query(SQLCallback_UpdateClientData, rotation);
 
 		FormatEx(rotation, sizeof(rotation), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `rotation%i`,`last_seen`) VALUES (\"%s\", '%i', '%f','%d');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_rotation[slot], slot, g_PlayerWeapon[client][index].m_rotation[slot],GetTime());
@@ -160,7 +160,7 @@ void UpdateWearData(int client, int index, int slot)
 	}
 	else
 	{
-		FormatEx(wear, sizeof(wear), "UPDATE %s SET `wear%i`='%f',`weaponindex`='%d',`last_seen`='%d' WHERE `steamid`=\"%s\";", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_wear[slot],defIndex,GetTime(),authId);
+		FormatEx(wear, sizeof(wear), "UPDATE %s SET `wear%i`='%f',`last_seen`='%d' WHERE `steamid`=\"%s\" AND `weaponindex`='%d';", MySQL_TABLE, slot, g_PlayerWeapon[client][index].m_wear[slot],GetTime(),authId,defIndex);
 		g_Database.Query(SQLCallback_UpdateClientData, wear);
 
 		FormatEx(wear, sizeof(wear), "INSERT OR IGNORE INTO %s (`steamid`, `weaponindex`, `wear%i`,`last_seen`) VALUES (\"%s\", '%i', '%f','%d');", MySQL_TABLE, slot, authId, defIndex, g_PlayerWeapon[client][index].m_wear[slot], slot, g_PlayerWeapon[client][index].m_wear[slot],GetTime());
